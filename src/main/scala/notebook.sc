@@ -4,7 +4,7 @@ import it.dtk.news._
 val queries = List("furto","puglia")
 val lang = "it"
 val ip = "151.48.44.113"
-val url = AjaxGoogleNews.generateUrls(queries,"it",ip)
+val url = AjaxGoogleNews.generateUrls(queries, "it",ip)
 
 
 print(url(0))
