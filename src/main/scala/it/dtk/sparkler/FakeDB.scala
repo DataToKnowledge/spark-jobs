@@ -8,27 +8,27 @@ import org.joda.time.DateTime
   */
 object FakeDB {
 
-  def listFeeds(): List[FeedSource] = {
+  def listFeeds(): List[Feed] = {
     List(
-      FeedSource(
+      Feed(
         publisher = "new.google.com",
         url = "https://news.google.com/?output=rss&q=furti&rsz=8",
         parsedUrls = List.empty[String],
         lastTime = Some(DateTime.now())
       ),
-      FeedSource(
+      Feed(
         publisher = "new.google.com",
         url = "https://news.google.com/?output=rss&q=rapine&rsz=8",
         parsedUrls = List.empty[String],
         lastTime = Some(DateTime.now())
       ),
-      FeedSource(
+      Feed(
         publisher = "new.google.com",
         url = "https://news.google.com/?output=rss&q=furti%20bari&rsz=8",
         parsedUrls = List.empty[String],
         lastTime = Some(DateTime.now())
       ),
-      FeedSource(
+      Feed(
         publisher = "new.google.com",
         url = "https://news.google.com/?output=rss&q=violenza&rsz=8",
         parsedUrls = List.empty[String],

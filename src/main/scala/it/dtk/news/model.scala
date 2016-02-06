@@ -12,12 +12,12 @@ object model {
                                   time: FiniteDuration = 10 minutes,
                                   delta: FiniteDuration = 2 minutes)
 
-  case class FeedSource(url: String,
-                        publisher: String,
-                        parsedUrls: List[String],
-                        lastTime: Option[DateTime],
-                        count: Long = 0,
-                        schedulerParams: SchedulerParameters = SchedulerParameters())
+  case class Feed(url: String,
+                  publisher: String,
+                  parsedUrls: List[String],
+                  lastTime: Option[DateTime],
+                  count: Long = 0,
+                  schedulerParams: SchedulerParameters = SchedulerParameters())
 
   case class Article(uri: String,
                      title: String,
@@ -30,4 +30,5 @@ object model {
                      lang: String = "",
                      cleanedText: String = ""
                     )
+
 }

@@ -24,7 +24,7 @@ object AjaxGoogleNewsJob {
 
     val news = sc.parallelize(source)
       .flatMap(terms => googleNews.generateUrls(terms, lang, ip))
-      .flatMap(u => googleNews.articles(u))
+      .flatMap(u => googleNews.getResultsAsArticles(u))
       .map(a =>GanderHelper.extend(a))
 
     val collected = news.collect()

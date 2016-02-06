@@ -1,0 +1,3 @@
+[submodule "dockerfile"]
+	path = dockerfile
+	url = git@github.com:DataToKnowledge/dockerfile.git

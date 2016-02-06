@@ -68,10 +68,10 @@ object HttpDownloader {
     * @param url the url to retrieve
     * @return get a future to the url using Play WS
     */
-  def wget(url: String): Option[WSResponse] =
+  def wget(url: String, timeout: FiniteDuration = 5.seconds): Option[WSResponse] =
     try {
       val req = WS.url(url).withFollowRedirects(true).get()
-      Some(Await.result(req, 10 second))
+      Some(Await.result(req, timeout))
     } catch {
       case e: Exception =>
         e.printStackTrace()
@@ -86,6 +86,9 @@ object HttpDownloader {
   }
 }
 
+/**
+  * Extract feed usig Rome
+  */
 object RomeFeedHelper {
 
   import com.github.nscala_time.time.Imports._
@@ -103,7 +106,6 @@ object RomeFeedHelper {
       else e.getUri.lastIndexOf("https://")
 
       val uri = e.getUri.substring(index, e.getUri.length)
-
       val keywords = HtmlHelper.urlTags(uri)
 
       Article(
@@ -113,14 +115,17 @@ object RomeFeedHelper {
         keywords = keywords,
         publisher = publisher,
         categories = e.getCategories.map(_.getName).toList,
-        cleanedText = description,
         imageUrl = e.getEnclosures.map(_.getUrl).mkString(""),
-        date = new DateTime(e.getPublishedDate)
+        date = new DateTime(e.getPublishedDate),
+        cleanedText = description
       )
     }.toList
   }
 }
 
+/**
+  * Parse a string using tika
+  */
 object TikaHelper {
 
   def process(html: String, contentType: String): (String, String) = {
@@ -154,6 +159,9 @@ object TikaHelper {
   }
 }
 
+/**
+  * Uses Gander to extract the article from html
+  */
 object GanderHelper {
 
   import com.github.nscala_time.time.Imports._
@@ -197,6 +205,9 @@ object GanderHelper {
   }
 }
 
+/**
+  * General HTML helper
+  */
 object HtmlHelper {
   def text(html: String): String =
     Jsoup.parse(html).text()
@@ -233,6 +244,9 @@ object HtmlHelper {
   }
 }
 
+/**
+  * Used to find news based on term queries
+  */
 object AjaxGoogleNews {
 
   import java.text.SimpleDateFormat
@@ -265,8 +279,15 @@ object AjaxGoogleNews {
   def decode(url: String): String =
     java.net.URLDecoder.decode(url, "UTF-8")
 
-  val example = "https://ajax.googleapis.com/ajax/services/search/news?v=1.0&q=furti%20puglia&hl=it&rsz=8&scoring=d&start=0"
+//  val example = "https://ajax.googleapis.com/ajax/services/search/news?v=1.0&q=furti%20puglia&hl=it&rsz=8&scoring=d&start=0"
 
+  /**
+    *
+    * @param query
+    * @param lang
+    * @param ipAddress
+    * @return a List of generate urls with the given term queries
+    */
   def generateUrls(query: List[String], lang: String, ipAddress: String): Seq[String] = {
     val urlQuery = query.mkString("%20")
     val starts = (0 until 8).map(_ * 8)
@@ -276,15 +297,20 @@ object AjaxGoogleNews {
     starts.map(start => baseUrl + start)
   }
 
-  def results(url: String): List[SearchResult] = {
+  /**
+    *
+    * @param url
+    * @return return a list of search Results
+    */
+  def getResults(url: String): List[SearchResult] = {
     HttpDownloader.wget(url).map { res =>
       val json = parse(res.body)
       (json \ "responseData" \ "results").extract[List[SearchResult]]
     }.getOrElse(List.empty[SearchResult])
   }
 
-  def articles(url: String): List[Article] =
-    results(url).map { res =>
+  def getResultsAsArticles(url: String): List[Article] =
+    getResults(url).map { res =>
 
       val date = Try(dateFormatter.parse(res.publishedDate))
         .map(d => new DateTime(d))
