@@ -4,14 +4,20 @@ if [ "$#" -eq 0 ]; then
     cat << 'EOF'
 Usage: ./dev.sh start | ps | stop | restart | rm | logs
 
+    start --> starts elasticsearch, zookeeper, kafka and trifecta
+    ps --> lists the istances running
+    rm --> stops and removes all the running instances
+    stop --> stops the instances
+    restart --> restarts all the dockers
+    logs --> starts the log
 Example:
-$: ./dev.sh start -- start elasticsearch, zookeeper and kafka
+$: ./dev.sh start --
 
 EOF
     exit 1
 fi
 
-compose_path=dockerfile/dev-images/elasticsearch
+compose_path=dockerfile/dev_env
 
 case $1 in
     start)
@@ -37,6 +43,7 @@ case $1 in
     logs)
         cd $compose_path && docker-compose logs
         ;;
+
     *)
         echo "the command ${1} is not recognized"
         exit 1
