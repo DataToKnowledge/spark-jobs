@@ -1,6 +1,6 @@
 package it.dtk.sparkler
 
-import it.dtk.news._
+import it.dtk._
 
 /**
   * Created by fabiofumarola on 31/01/16.
