@@ -1,8 +1,7 @@
 package it.dtk.sparkler.jobs
 
-import it.dtk.news.GanderHelper
 import it.dtk.sparkler.dsl._
-import org.apache.spark.{SparkContext, SparkConf}
+import org.apache.spark.{SparkConf, SparkContext}
 
 /**
   * Created by fabiofumarola on 31/01/16.
@@ -25,13 +24,15 @@ object AjaxGoogleNewsJob {
     val news = sc.parallelize(source)
       .flatMap(terms => googleNews.generateUrls(terms, lang, ip))
       .flatMap(u => googleNews.getResultsAsArticles(u))
-      .map(a =>GanderHelper.extend(a))
+      .map(a =>gander.extend(a))
 
     val collected = news.collect()
 
     collected.foreach { c =>
       println(c)
     }
+
+    sc.stop()
   }
 
 }

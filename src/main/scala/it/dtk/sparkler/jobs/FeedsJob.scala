@@ -2,8 +2,7 @@ package it.dtk.sparkler.jobs
 
 import it.dtk.sparkler.FakeDB
 import it.dtk.sparkler.dsl._
-import org.apache.spark.{SparkContext, SparkConf}
-
+import org.apache.spark.{SparkConf, SparkContext}
 
 /**
   * Created by fabiofumarola on 30/01/16.

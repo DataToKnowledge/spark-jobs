@@ -1,6 +1,7 @@
 package it.dtk.sparkler
 
-import it.dtk.news.model._
+import it.dtk.model
+import model._
 import org.joda.time.DateTime
 
 /**
