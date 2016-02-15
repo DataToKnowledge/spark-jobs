@@ -9,7 +9,10 @@ import org.apache.spark.{SparkConf, SparkContext}
 object AjaxGoogleNewsJob {
 
   def main(args: Array[String]) {
-    val conf = new SparkConf().setAppName("Ajax Google News Job").setMaster("local[4]")
+    val conf = new SparkConf()
+      .setAppName("Ajax Google News Job")
+      .setMaster("local[4]")
+
     val sc = new SparkContext(conf)
 
     val source = List(

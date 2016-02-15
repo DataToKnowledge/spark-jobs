@@ -17,14 +17,10 @@ lazy val root = (project in file("."))
     libraryDependencies ++= Seq(
       "org.apache.spark" %% "spark-core" % "1.6.0",
       "org.apache.spark" %% "spark-sql" % "1.6.0",
-      "org.apache.spark" %% "spark-streaming" % "1.6.0"
-      //to remove
-      //  "com.tribbloids.spookystuff" % "spookystuff-core" % "0.3.2",
-      //  "org.apache.httpcomponents" % "httpclient" % "4.5.1"
+      "org.apache.spark" %% "spark-streaming" % "1.6.0",
+      "org.elasticsearch" % "elasticsearch-spark_2.11" % "2.2.0"
     ),
-//    dependencyOverrides ++= Set(
-//      "com.fasterxml.jackson.core" % "jackson-databind" % "2.4.4"
-//    ),
+    libraryDependencies ~= { _.map(_.exclude("org.slf4j", "slf4j-log4j12")) },
     defaultScalariformSettings
   ) dependsOn algocore
 
