@@ -11,7 +11,7 @@ Usage: ./dev.sh start | ps | stop | restart | rm | logs
     restart --> restarts all the dockers
     logs --> starts the log
 Example:
-$: ./dev.sh start --
+$: ./dev.sh start
 
 EOF
     exit 1

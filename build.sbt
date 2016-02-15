@@ -22,9 +22,9 @@ lazy val root = (project in file("."))
       //  "com.tribbloids.spookystuff" % "spookystuff-core" % "0.3.2",
       //  "org.apache.httpcomponents" % "httpclient" % "4.5.1"
     ),
-    dependencyOverrides ++= Set(
-      "com.fasterxml.jackson.core" % "jackson-databind" % "2.4.4"
-    ),
+//    dependencyOverrides ++= Set(
+//      "com.fasterxml.jackson.core" % "jackson-databind" % "2.4.4"
+//    ),
     defaultScalariformSettings
   ) dependsOn algocore
 
