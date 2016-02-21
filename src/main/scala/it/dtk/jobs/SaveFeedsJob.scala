@@ -1,5 +1,6 @@
-package it.dtk.sparkjobs
+package it.dtk.jobs
 
+import it.dtk.model.Feed
 import it.dtk.sparkler.FakeDB
 import org.apache.spark.{SparkConf, SparkContext}
 import org.elasticsearch.spark._
@@ -17,7 +18,7 @@ object SaveFeedsJob {
 
 
     val local = true
-    val indexPath = "wheretolive/feeds"
+    val indexPath = "test/feeds"
     val esNodes = "192.168.99.100"
 
     val conf = new SparkConf()
@@ -37,8 +38,15 @@ object SaveFeedsJob {
         write(feed)
       }
       .saveJsonToEs(indexPath, Map("es.mapping.id" -> "url"))
-    val rdd = sc.esRDD(indexPath)
-    rdd.foreach(println)
+    val rdd = sc.esJsonRDD(indexPath)
+
+    val parsedFeed = rdd.map{
+      case (id, json) =>
+        implicit val formats = Serialization.formats(NoTypeHints) ++ JodaTimeSerializers.all
+        parse(json).extract[Feed]
+    }
+
+    parsedFeed.foreach(println)
 
     sc.stop()
   }

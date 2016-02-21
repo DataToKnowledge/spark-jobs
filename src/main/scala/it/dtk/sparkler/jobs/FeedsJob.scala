@@ -9,7 +9,8 @@ import org.apache.spark.{SparkConf, SparkContext}
   */
 object FeedsJob {
   def main(args: Array[String]) {
-    val conf = new SparkConf().setAppName("Feeds Job").setMaster("local[4]")
+    val conf = new SparkConf().setAppName("Feeds Job")
+      .setMaster("local[4]")
     val sc = new SparkContext(conf)
 
     val sourceList = FakeDB.listFeeds()

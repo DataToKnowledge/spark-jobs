@@ -1,4 +1,4 @@
-package it.dtk.sparkjobs
+package it.dtk.jobs
 
 import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.SparkContext._
@@ -12,7 +12,7 @@ object NewsExtractorJob {
 
     val conf = new SparkConf()
       .setAppName(this.getClass.getName)
-      .setMaster("local[4]")
+//      .setMaster("local[4]")
 
     conf.set("es.nodes.wan.only", "true")
       .set("es.nodes", "192.168.99.100")

@@ -18,9 +18,12 @@ lazy val root = (project in file("."))
       "org.apache.spark" %% "spark-core" % "1.6.0",
       "org.apache.spark" %% "spark-sql" % "1.6.0",
       "org.apache.spark" %% "spark-streaming" % "1.6.0",
-      "org.elasticsearch" % "elasticsearch-spark_2.11" % "2.2.0"
+      "org.elasticsearch" %% "elasticsearch-spark" % "2.2.0",
+      "org.apache.kafka" % "kafka-clients" % "0.9.0.0"
     ),
-    libraryDependencies ~= { _.map(_.exclude("org.slf4j", "slf4j-log4j12")) },
+    libraryDependencies ~= {
+      _.map(_.exclude("org.slf4j", "slf4j-log4j12"))
+    },
     defaultScalariformSettings
   ) dependsOn algocore
 
