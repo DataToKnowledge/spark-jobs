@@ -3,7 +3,7 @@ package it.dtk
 import java.util.Properties
 
 import com.google.common.base.Charsets
-import org.apache.kafka.clients.producer.{ProducerRecord, KafkaProducer}
+import org.apache.kafka.clients.producer.{RecordMetadata, Callback, ProducerRecord, KafkaProducer}
 
 /**
   * Created by fabiofumarola on 21/02/16.
@@ -22,9 +22,6 @@ object KafkaUtils {
     //    props.put("compression.type", "snappy")
     props.put("key.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer")
     props.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer")
-    props.put("batch.size", "1000")
-    props.put("client.id", "")
-    props.put("request.timeout.ms", "3000")
     new KafkaProducer[Array[Byte], Array[Byte]](props)
   }
 
@@ -33,4 +30,23 @@ object KafkaUtils {
       new ProducerRecord[Array[Byte], Array[Byte]](topic, partition.get, key.getBytes, value.getBytes)
     else new ProducerRecord[Array[Byte], Array[Byte]](topic, key.getBytes, value.getBytes)
   }
+}
+
+
+object Main extends App {
+
+  val writer = KafkaUtils.kafkaWriter("192.168.99.100:9092","")
+
+  val record = KafkaUtils.producerRecord("test", None, "ciao", "ciao")
+  (1 to 10).foreach{ i =>
+    val data = writer.send(record, new Callback {
+      override def onCompletion(metadata: RecordMetadata, exception: Exception): Unit = {
+        println(metadata)
+        println(exception)
+      }
+    }).get()
+
+    println(data)
+  }
+
 }

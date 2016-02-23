@@ -19,7 +19,7 @@ lazy val root = (project in file("."))
       "org.apache.spark" %% "spark-sql" % "1.6.0",
       "org.apache.spark" %% "spark-streaming" % "1.6.0",
       "org.elasticsearch" %% "elasticsearch-spark" % "2.2.0",
-      "org.apache.kafka" % "kafka-clients" % "0.9.0.0"
+      "org.apache.kafka" % "kafka-clients" % "0.9.0.1"
     ),
     libraryDependencies ~= {
       _.map(_.exclude("org.slf4j", "slf4j-log4j12"))

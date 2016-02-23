@@ -13,7 +13,7 @@ import org.json4s.jackson.Serialization.write
 /**
   * Created by fabiofumarola on 15/02/16.
   */
-object SaveFeedsJob {
+object CreateFeedsElastic {
   def main(args: Array[String]): Unit = {
 
 

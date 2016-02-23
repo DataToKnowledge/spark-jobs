@@ -1,17 +1,18 @@
 package it.dtk.jobs
 
+import java.util.Properties
 import java.util.concurrent.{TimeUnit, Future}
 
 import it.dtk.KafkaUtils
 import it.dtk.model.{SchedulerData, Article, Feed}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{TaskContext, SparkConf, SparkContext}
 import org.elasticsearch.spark._
 import org.joda.time.DateTime
 import org.json4s.NoTypeHints
 import org.json4s.ext.JodaTimeSerializers
 import org.json4s.jackson.Serialization
-import org.json4s.jackson.Serialization.write
+import org.json4s.jackson.Serialization._
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import dsl._
@@ -64,16 +65,16 @@ object FeedsExtractorJob {
 
     val datasource = loadFeedSources(sc, indexPath)
 
-//    val filteredSource = datasource
-//      .filter(_.schedulerData.time.isBeforeNow)
-//    println(filteredSource.count())
+    //    val filteredSource = datasource
+    //      .filter(_.schedulerData.time.isBeforeNow)
+    //    println(filteredSource.count())
 
     val extracted = getFeedItems(datasource)
 
     //save updated feedSources
     val extrFeedSources = extracted.map(_._1)
 
-//    saveFeedSources(sc, indexPath, extrFeedSources)
+    //    saveFeedSources(sc, indexPath, extrFeedSources)
 
     //extract main articles
     val extrArticles = extracted.flatMap(_._2)
@@ -83,7 +84,11 @@ object FeedsExtractorJob {
     val mainArticles = getMainArticles(extrArticles)
 
     //save to kafka
-    val metadata = saveArticlesToKafka(mainArticles, kafkaServers, clientId, kafkaTopic)
+    val offsets = writeToKafka(mainArticles, kafkaServers, clientId, kafkaTopic)
+
+    println(s"extracted  feeds")
+
+    sc.stop()
   }
 
   /**
@@ -140,17 +145,61 @@ object FeedsExtractorJob {
     }.saveJsonToEs(indexPath, Map("es.mapping.id" -> "url"))
   }
 
-  def saveArticlesToKafka(rdd: RDD[Article], kafkaServers: String, clientId: String, topic: String): Unit = {
-    rdd.foreachPartition { it =>
-      implicit val formats = Serialization.formats(NoTypeHints) ++ JodaTimeSerializers.all
-      val producer = KafkaUtils.kafkaWriter(kafkaServers, clientId)
+  def saveArticlesToKafka(rdd: RDD[Article], kafkaServers: String, clientId: String, topic: String): RDD[Long] = {
+    rdd.mapPartitionsWithIndex { (id, it) =>
+      val props = new Properties()
+      props.put("bootstrap.servers", kafkaServers)
+      //    props.put("compression.type", "snappy")
+      props.put("key.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer")
+      props.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer")
+      val producer = new KafkaProducer[Array[Byte], Array[Byte]](props)
 
-      val results = it.map { a =>
-        val msg = KafkaUtils.producerRecord(topic, None, a.uri, write(a))
+      val result = it.map { a =>
+        implicit val formats = Serialization.formats(NoTypeHints) ++ JodaTimeSerializers.all
+        //        val msg = KafkaUtils.producerRecord(topic, None, a.uri, write(a))
+        val msg = new ProducerRecord[Array[Byte], Array[Byte]](topic, a.uri.getBytes, write(a).getBytes)
         val r = producer.send(msg).get(10, TimeUnit.SECONDS)
-        println(r)
+        r.offset()
       }
+
       producer.close(10, TimeUnit.MILLISECONDS)
+      result
     }
+  }
+
+  def writeToKafka(rdd: RDD[Article], kafkaServers: String, clientId: String, topic: String): Unit = {
+
+    def save(context: TaskContext, iter: Iterator[Article]): Unit =  {
+      val props = new Properties()
+      props.put("bootstrap.servers", kafkaServers)
+      //    props.put("compression.type", "snappy")
+      props.put("key.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer")
+      props.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer")
+      val producer = new KafkaProducer[Array[Byte], Array[Byte]](props)
+      try {
+        iter.foreach { a =>
+          if (context.isInterrupted) sys.error("interrupted")
+          implicit val formats = Serialization.formats(NoTypeHints) ++ JodaTimeSerializers.all
+          val msg = new ProducerRecord[Array[Byte], Array[Byte]](topic, a.uri.getBytes, write(a).getBytes)
+          val r = producer.send(msg).get(10, TimeUnit.SECONDS)
+        }
+      } finally {
+        producer.close()
+      }
+    }
+    rdd.context.runJob[Article,Unit](rdd, save _)
+  }
+
+  def saveArticlesToKafkaLocal(rdd: RDD[Article], kafkaServers: String, clientId: String, topic: String): Array[Long] = {
+    val producer = KafkaUtils.kafkaWriter(kafkaServers, "")
+    val result = rdd.collect().map { a =>
+      implicit val formats = Serialization.formats(NoTypeHints) ++ JodaTimeSerializers.all
+      val msg = KafkaUtils.producerRecord(topic, None, a.uri, write(a))
+      val r = producer.send(msg).get(10, TimeUnit.SECONDS)
+      r.offset()
+    }
+
+    producer.close(10, TimeUnit.MILLISECONDS)
+    result
   }
 }
