@@ -13,7 +13,7 @@ lazy val commons = Seq(
 lazy val root = (project in file("."))
   .settings(commons: _*)
   .settings(
-    name := "sparkler",
+    name := "spark-jobs",
     libraryDependencies ++= Seq(
       "org.apache.spark" %% "spark-core" % "1.6.0",
       "org.apache.spark" %% "spark-sql" % "1.6.0",
