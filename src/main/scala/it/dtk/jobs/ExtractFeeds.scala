@@ -23,7 +23,7 @@ import scala.util.Try
 /**
   * Created by fabiofumarola on 21/02/16.
   */
-object FeedsExtractorJob {
+object ExtractFeeds {
 
   def main(args: Array[String]) {
     if (args.isEmpty) {
@@ -35,7 +35,7 @@ object FeedsExtractorJob {
           |
           |example
           |./bin/spark-submit \
-          |  --class it.dtk.sparkjobs.FeedsExtractorJob \
+          |  --class it.dtk.jobs.ExtractFeeds \
           |  --master spark://spark-master-0 \
           |  --executor-memory 2G \
           |  --total-executor-cores 5 \
@@ -46,10 +46,10 @@ object FeedsExtractorJob {
     }
 
     val local = Try(args(0).toBoolean).getOrElse(true)
-    val indexPath = Try(args(1)).getOrElse("test/feeds") //.getOrElse("wtl/feeds")
+    val indexPath = Try(args(1)).getOrElse("wtl/feeds")
     val esNodes = Try(args(2)).getOrElse("192.168.99.100")
     val kafkaServers = Try(args(3)).getOrElse("192.168.99.100:9092")
-    val kafkaTopic = Try(args(4)).getOrElse("articles")
+    val kafkaTopic = Try(args(4)).getOrElse("feed_items")
     val clientId = Try(args(5)).getOrElse(this.getClass.getName)
 
     val conf = new SparkConf()
@@ -65,16 +65,16 @@ object FeedsExtractorJob {
 
     val datasource = loadFeedSources(sc, indexPath)
 
-    //    val filteredSource = datasource
-    //      .filter(_.schedulerData.time.isBeforeNow)
-    //    println(filteredSource.count())
+    val filteredSource = datasource
+      .filter(_.schedulerData.time.isBeforeNow)
+    println(filteredSource.count())
 
     val extracted = getFeedItems(datasource)
 
     //save updated feedSources
     val extrFeedSources = extracted.map(_._1)
 
-    //    saveFeedSources(sc, indexPath, extrFeedSources)
+    saveFeedSources(sc, indexPath, extrFeedSources)
 
     //extract main articles
     val extrArticles = extracted.flatMap(_._2)
@@ -144,7 +144,7 @@ object FeedsExtractorJob {
       write(feed)
     }.saveJsonToEs(indexPath, Map("es.mapping.id" -> "url"))
   }
-  
+
   def writeToKafka(rdd: RDD[Article], kafkaServers: String, clientId: String, topic: String): RDD[Long] = {
 
     def save(context: TaskContext, iter: Iterator[Article]): Array[Long] = {

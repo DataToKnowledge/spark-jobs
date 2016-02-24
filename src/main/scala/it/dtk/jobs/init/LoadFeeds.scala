@@ -1,4 +1,4 @@
-package it.dtk.jobs
+package it.dtk.jobs.init
 
 import it.dtk.model.Feed
 import it.dtk.sparkler.FakeDB
@@ -13,12 +13,12 @@ import org.json4s.jackson.Serialization.write
 /**
   * Created by fabiofumarola on 15/02/16.
   */
-object CreateFeedsElastic {
+object LoadFeeds {
   def main(args: Array[String]): Unit = {
 
 
     val local = true
-    val indexPath = "test/feeds"
+    val indexPath = "wtl/feeds"
     val esNodes = "192.168.99.100"
 
     val conf = new SparkConf()
