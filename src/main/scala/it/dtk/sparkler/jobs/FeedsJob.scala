@@ -1,6 +1,6 @@
 package it.dtk.sparkler.jobs
 
-import it.dtk.sparkler.FakeDB
+import it.dtk.FakeDB
 import it.dtk.sparkler.dsl._
 import org.apache.spark.{SparkConf, SparkContext}
 

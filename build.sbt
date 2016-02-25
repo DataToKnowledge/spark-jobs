@@ -18,6 +18,8 @@ lazy val root = (project in file("."))
       "org.apache.spark" %% "spark-core" % "1.6.0",
       "org.apache.spark" %% "spark-sql" % "1.6.0",
       "org.apache.spark" %% "spark-streaming" % "1.6.0",
+      "org.apache.spark" %% "spark-streaming-kafka" % "1.6.0",
+      "org.apache.spark" %% "spark-streaming-twitter" % "1.6.0",
       "org.elasticsearch" %% "elasticsearch-spark" % "2.2.0",
       "org.apache.kafka" % "kafka-clients" % "0.9.0.1"
     ),
@@ -30,3 +32,4 @@ lazy val root = (project in file("."))
 lazy val algocore = (project in file("./algocore"))
   .settings(commons: _*)
   .settings(name := "algocore")
+

@@ -1,7 +1,7 @@
 package it.dtk.jobs.init
 
+import it.dtk.FakeDB
 import it.dtk.model.Feed
-import it.dtk.sparkler.FakeDB
 import org.apache.spark.{SparkConf, SparkContext}
 import org.elasticsearch.spark._
 import org.json4s._
@@ -13,7 +13,7 @@ import org.json4s.jackson.Serialization.write
 /**
   * Created by fabiofumarola on 15/02/16.
   */
-object LoadFeeds {
+object LoadFeedsIntoES {
   def main(args: Array[String]): Unit = {
 
 

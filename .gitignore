@@ -18,3 +18,4 @@ project/project/target
 .worksheet
 .idea
 notebooks/.ipynb_checkpoints
+checkpoints

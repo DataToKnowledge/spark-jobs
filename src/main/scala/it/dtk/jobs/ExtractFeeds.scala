@@ -1,22 +1,19 @@
 package it.dtk.jobs
 
 import java.util.Properties
-import java.util.concurrent.{TimeUnit, Future}
 
-import it.dtk.KafkaUtils
-import it.dtk.model.{SchedulerData, Article, Feed}
+import it.dtk.jobs.dsl._
+import it.dtk.model.{Article, Feed, SchedulerData}
+import org.apache.kafka.clients.producer._
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{TaskContext, SparkConf, SparkContext}
+import org.apache.spark.{SparkConf, SparkContext, TaskContext}
 import org.elasticsearch.spark._
 import org.joda.time.DateTime
-import org.json4s.NoTypeHints
+import org.json4s.{NoTypeHints, _}
 import org.json4s.ext.JodaTimeSerializers
+import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization
 import org.json4s.jackson.Serialization._
-import org.json4s._
-import org.json4s.jackson.JsonMethods._
-import dsl._
-import org.apache.kafka.clients.producer._
 
 import scala.util.Try
 
@@ -65,30 +62,30 @@ object ExtractFeeds {
 
     val datasource = loadFeedSources(sc, indexPath)
 
-    val filteredSource = datasource
-      .filter(_.schedulerData.time.isBeforeNow)
-    println(filteredSource.count())
+//    val filteredSource = datasource
+//      .filter(_.schedulerData.time.isBeforeNow)
+//    println(filteredSource.count())
 
     val extracted = getFeedItems(datasource)
 
     //save updated feedSources
-    val extrFeedSources = extracted.map(_._1)
-
-    saveFeedSources(sc, indexPath, extrFeedSources)
+//    val extrFeedSources = extracted.map(_._1)
+//    saveFeedSources(sc, indexPath, extrFeedSources)
 
     //extract main articles
     val extrArticles = extracted.flatMap(_._2)
 
-    val array = extrArticles.collect()
-
     val mainArticles = getMainArticles(extrArticles)
+
+    println(s"extracted ${mainArticles.count()} feeds")
 
     //save to kafka
     val offsets = writeToKafka(mainArticles, kafkaServers, clientId, kafkaTopic)
 
-    println(s"extracted ${offsets.count()} feeds")
+    println(s"send to kafka ${offsets.count()} feeds")
 
     sc.stop()
+    System.exit(0)
   }
 
   /**
