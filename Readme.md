@@ -9,7 +9,7 @@ Execute
 ```
 before developing. It will clone the dependent projects
 
-Sparkler needs Kafka and Elasticsearch that can be ran using the script `dev.sh`
+Sparkler needs Kafka and Elasticsearch that can be run using the script `dev.sh`
 
 ```bash
 Usage: ./dev.sh start | ps | stop | restart | rm | logs
