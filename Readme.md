@@ -1,6 +1,6 @@
 # General
 
-this repository includes the base logis used to extract feeds from the web and the spark jobs to download the feeds.
+this repository includes the base logic used to extract feeds from the web and the spark jobs to download the feeds.
 
 Execute
 ```bash
@@ -9,7 +9,7 @@ Execute
 ```
 before developing. It will clone the dependent projects
 
-Sparkler needs Kafka and Elasticsearch that can be ran using the script `dev.sh`
+Sparkler needs Kafka and Elasticsearch that can be run using the script `dev.sh`
 
 ```bash
 Usage: ./dev.sh start | ps | stop | restart | rm | logs
