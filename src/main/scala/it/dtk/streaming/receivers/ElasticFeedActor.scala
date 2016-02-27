@@ -1,13 +1,10 @@
-package it.dtk.streaming
+package it.dtk.streaming.receivers
 
-import akka.actor.{Props, Actor}
-import akka.actor.Actor.Receive
-import akka.event.Logging
+import akka.actor.Actor
 import it.dtk.es.ElasticFeeds
 import org.apache.spark.streaming.receiver.ActorHelper
-import scala.concurrent.duration._
-import akka.pattern.pipe
 
+import scala.concurrent.duration._
 import scala.util._
 
 object ElasticActorReceiver {
@@ -31,7 +28,7 @@ class ElasticActorReceiver(hosts: String, indexPath: String, clusterName: String
     case "extract" =>
       val s = self
 
-      feedExtractor.feedsFuture(from) onComplete {
+      feedExtractor.listFeedsFuture(from) onComplete {
         case Success(feeds) =>
           if (feeds.nonEmpty) {
             feeds.foreach(i => store(i))

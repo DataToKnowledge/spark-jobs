@@ -63,15 +63,15 @@ object ExtractFeeds {
 
     val datasource = loadFeedSources(sc, indexPath)
 
-//    val filteredSource = datasource
-//      .filter(_.schedulerData.time.isBeforeNow)
-//    println(filteredSource.count())
+    val filteredSource = datasource
+      .filter(_.schedulerData.time.isBeforeNow)
+    println(filteredSource.count())
 
-    val extracted = getFeedItems(datasource)
+    val extracted = getFeedItems(filteredSource)
 
     //save updated feedSources
-//    val extrFeedSources = extracted.map(_._1)
-//    saveFeedSources(sc, indexPath, extrFeedSources)
+    val extrFeedSources = extracted.map(_._1)
+    saveFeedSources(sc, indexPath, extrFeedSources)
 
     //extract main articles
     val extrArticles = extracted.flatMap(_._2)

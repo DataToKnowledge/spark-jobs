@@ -1,31 +1,19 @@
 package it.dtk.streaming
 
-import java.nio.charset.Charset
-
 import akka.actor.Props
-import it.dtk.kafka.{KafkaWriter, ProducerProperties}
-import it.dtk.model.{SchedulerData, Article, Feed}
-import org.apache.spark.rdd.RDD
-import org.apache.spark.streaming.dstream.DStream
-import org.apache.spark.{SparkContext, SparkConf}
-import org.apache.spark.streaming.{Minutes, Seconds, StreamingContext}
-import org.joda.time.DateTime
-import org.json4s.NoTypeHints
-import org.json4s.ext.JodaTimeSerializers
-import org.json4s.jackson.JsonMethods._
-import org.json4s.jackson.Serialization
-import org.json4s.jackson.Serialization._
-import org.elasticsearch.spark._
 import it.dtk.dsl._
+import it.dtk.model.{Article, Feed, SchedulerData}
+import it.dtk.streaming.receivers.ElasticActorReceiver
+import org.apache.spark.SparkConf
+import org.apache.spark.streaming.dstream.DStream
+import org.apache.spark.streaming.{Seconds, Minutes, StreamingContext}
+import org.joda.time.DateTime
 
-
-import scala.collection.mutable
-import scala.util.Try
 
 /**
   * Created by fabiofumarola on 27/02/16.
   */
-object ExtractFeeds {
+object ExtractFeeds extends StreamUtils {
 
   def main(args: Array[String]) {
 
@@ -71,7 +59,7 @@ object ExtractFeeds {
     conf.set("es.nodes.wan.only", "true")
     conf.set("es.nodes", esIPs)
 
-    val ssc = new StreamingContext(conf, Seconds(15))
+    val ssc = new StreamingContext(conf, Seconds(30))
 
     val nodes = esIPs.split(",").map(_ + ":9300").mkString(",")
     val feedsStream = ssc.actorStream[Feed](
@@ -128,39 +116,6 @@ object ExtractFeeds {
       )
 
       (newF, filtArticles)
-    }
-  }
-
-  /**
-    * upsert the given feeds into elasticsearch
-    *
-    * @param indexPath
-    * @param dStream
-    *
-    */
-  def saveFeedsElastic(indexPath: String, dStream: DStream[Feed]): Unit = {
-    dStream.foreachRDD { rdd =>
-      rdd.map { feed =>
-        implicit val formats = Serialization.formats(NoTypeHints) ++ JodaTimeSerializers.all
-        write(feed)
-      }.saveJsonToEs(indexPath, Map("es.mapping.id" -> "url"))
-    }
-  }
-
-  def writeToKafka(dStream: DStream[Article], brokers: String, clientId: String, topic: String): Unit = {
-    val props = ProducerProperties(brokers, topic, clientId)
-    dStream.foreachRDD { rdd =>
-
-      rdd.foreachPartition { it =>
-        implicit val formats = Serialization.formats(NoTypeHints) ++ JodaTimeSerializers.all
-
-        val writer = KafkaWriter.getConnection(props)
-
-        it.foreach { a =>
-          println(s"sending to kafka news with uri ${a.uri}")
-          writer.send(a.uri.getBytes(), write(a).getBytes())
-        }
-      }
     }
   }
 }

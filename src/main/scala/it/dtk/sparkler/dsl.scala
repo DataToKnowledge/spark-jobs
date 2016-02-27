@@ -11,5 +11,5 @@ object dsl {
   val tika = TikaHelper
   val gander = GanderHelper
   val html = HtmlHelper
-  val googleNews = AjaxGoogleNews
+  val googleNews = QueryTermsSearch
 }
