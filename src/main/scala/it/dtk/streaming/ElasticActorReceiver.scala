@@ -2,6 +2,7 @@ package it.dtk.streaming
 
 import akka.actor.{Props, Actor}
 import akka.actor.Actor.Receive
+import akka.event.Logging
 import it.dtk.es.ElasticFeeds
 import org.apache.spark.streaming.receiver.ActorHelper
 import scala.concurrent.duration._
@@ -24,7 +25,7 @@ class ElasticActorReceiver(hosts: String, indexPath: String, clusterName: String
   val feedExtractor = new ElasticFeeds(hosts, indexPath, clusterName)
   var from = 0
 
-  context.system.scheduler.schedule(100.milliseconds, scheduleTime, self, "extract")
+  context.system.scheduler.schedule(0.milliseconds, scheduleTime, self, "extract")
 
   override def receive: Receive = {
     case "extract" =>
@@ -36,11 +37,13 @@ class ElasticActorReceiver(hosts: String, indexPath: String, clusterName: String
             feeds.foreach(i => store(i))
             from += feeds.size
             s ! "extract"
-          } else from = 0
-
+          } else {
+            log.debug("reset the from position to {}", 0)
+            from = 0
+          }
 
         case Failure(ex) =>
-          ex.printStackTrace()
+          log.error("got exception in {} with msg {}", s.path.name, ex.getMessage, ex)
       }
 
 

@@ -1,6 +1,9 @@
 package it.dtk.streaming
 
+import java.nio.charset.Charset
+
 import akka.actor.Props
+import it.dtk.kafka.{KafkaWriter, ProducerProperties}
 import it.dtk.model.{SchedulerData, Article, Feed}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.dstream.DStream
@@ -27,46 +30,56 @@ object ExtractFeeds {
   def main(args: Array[String]) {
 
     if (args.isEmpty) {
+      println("mode: docker | local | prod")
       println(
-        """specify: local indexPath, esNodes
-          |   local: true | false
-          |   indexPath: wtl/feeds
-          |   esNodes: 192.168.99.100
-          |
+        """
           |example
-          |./bin/spark-submit \
+          | ./bin/spark-submit \
           |  --class it.dtk.jobs.ExtractFeeds \
           |  --master spark://spark-master-0 \
           |  --executor-memory 2G \
           |  --total-executor-cores 5 \
-          |  /path/to/examples.jar \
-          |  false wtl/feeds es-data-1
+          |  /path/to/examples.jar  prod
         """.stripMargin)
       sys.exit(1)
     }
 
-    val local = Try(args(0).toBoolean).getOrElse(true)
-    val indexPath = Try(args(1)).getOrElse("wtl/feeds")
-    val esNodes = Try(args(2)).getOrElse("192.168.99.100")
-    val clusterName = "wtl"
+    val clusterName = "wheretolive"
+    val indexPath = "wtl/feeds"
+    val topic = "feed_items"
 
-    val kafkaServers = Try(args(3)).getOrElse("192.168.99.100:9092")
-    val kafkaTopic = Try(args(4)).getOrElse("feed_items")
-    val clientId = Try(args(5)).getOrElse(this.getClass.getName)
+    var esIPs = "192.168.99.100"
+    var kafkaBrokers = "192.168.99.100:9092"
 
     val conf = new SparkConf()
       .setAppName(this.getClass.getName)
-      .setMaster("local[*]")
 
-    if (local)
-      conf.setMaster("local[4]")
+    args(0) match {
+      case "local" =>
+        esIPs = "localhost"
+        kafkaBrokers = "localhost:9092"
+        conf.setMaster("local[*]")
+
+      case "docker" =>
+        conf.setMaster("local[*]")
+
+      case "prod" =>
+        esIPs = "es-data-0,es-data-1,es-data-2"
+        kafkaBrokers = "kafka-1:9092,kafka-2:9092,kafka-3:9092"
+    }
+
     conf.set("es.nodes.wan.only", "true")
-    conf.set("es.nodes", esNodes)
+    conf.set("es.nodes", esIPs)
 
-    val ssc = new StreamingContext(conf, Minutes(15))
+    val ssc = new StreamingContext(conf, Seconds(15))
 
+    val nodes = esIPs.split(",").map(_ + ":9300").mkString(",")
     val feedsStream = ssc.actorStream[Feed](
-      Props(new ElasticActorReceiver(esNodes, indexPath, clusterName)), "FeedsReceiver")
+      Props(new ElasticActorReceiver(nodes, indexPath, clusterName)), "FeedsReceiver")
+
+    feedsStream.count().foreachRDD { rdd =>
+      println(s"Got ${rdd.collect()(0)} feeds from elasticsearch")
+    }
 
     val toCheckFeeds = feedsStream
       .filter(_.schedulerData.time.isBeforeNow)
@@ -75,10 +88,12 @@ object ExtractFeeds {
     saveFeedsElastic(indexPath, feedArticles.map(_._1))
 
     val mainContents = feedArticles.flatMap(_._2)
-      .map(a => gander.mainContent(a))
+      .map(article => gander.mainContent(article))
 
+    writeToKafka(mainContents, kafkaBrokers, "feed_extractor", topic)
 
-
+    ssc.start()
+    ssc.awaitTermination()
   }
 
   /**
@@ -113,7 +128,6 @@ object ExtractFeeds {
       )
 
       (newF, filtArticles)
-
     }
   }
 
@@ -133,4 +147,20 @@ object ExtractFeeds {
     }
   }
 
+  def writeToKafka(dStream: DStream[Article], brokers: String, clientId: String, topic: String): Unit = {
+    val props = ProducerProperties(brokers, topic, clientId)
+    dStream.foreachRDD { rdd =>
+
+      rdd.foreachPartition { it =>
+        implicit val formats = Serialization.formats(NoTypeHints) ++ JodaTimeSerializers.all
+
+        val writer = KafkaWriter.getConnection(props)
+
+        it.foreach { a =>
+          println(s"sending to kafka news with uri ${a.uri}")
+          writer.send(a.uri.getBytes(), write(a).getBytes())
+        }
+      }
+    }
+  }
 }
