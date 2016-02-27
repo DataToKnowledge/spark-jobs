@@ -2,7 +2,12 @@
 
 this repository includes the base logis used to extract feeds from the web and the spark jobs to download the feeds.
 
-Execute `init_subprojects.sh` before developing. It will clone the dependent projects
+Execute
+```bash
+init_subprojects.sh
+
+```
+before developing. It will clone the dependent projects
 
 Sparkler needs Kafka and Elasticsearch that can be ran using the script `dev.sh`
 
