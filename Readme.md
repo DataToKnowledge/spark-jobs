@@ -1,6 +1,6 @@
 # General
 
-this repository includes the base logis used to extract feeds from the web and the spark jobs to download the feeds.
+this repository includes the base logic used to extract feeds from the web and the spark jobs to download the feeds.
 
 Execute
 ```bash
