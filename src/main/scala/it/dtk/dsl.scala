@@ -1,6 +1,4 @@
-package it.dtk.jobs
-
-import it.dtk._
+package it.dtk
 
 /**
   * Created by fabiofumarola on 21/02/16.

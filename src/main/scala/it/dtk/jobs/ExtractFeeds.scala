@@ -2,7 +2,8 @@ package it.dtk.jobs
 
 import java.util.Properties
 
-import it.dtk.jobs.dsl._
+import it.dtk.dsl
+import dsl._
 import it.dtk.model.{Article, Feed, SchedulerData}
 import org.apache.kafka.clients.producer._
 import org.apache.spark.rdd.RDD
@@ -124,7 +125,7 @@ object ExtractFeeds {
   }
 
   def getMainArticles(rdd: RDD[Article]): RDD[Article] = {
-    rdd.map(a => gander.extend(a))
+    rdd.map(a => gander.mainContent(a))
   }
 
   def loadFeedSources(sc: SparkContext, indexPath: String): RDD[Feed] = {

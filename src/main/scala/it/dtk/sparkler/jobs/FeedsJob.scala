@@ -19,7 +19,7 @@ object FeedsJob {
       .flatMap(src => rome.parse(src.url, src.publisher)
         .filter(art => !src.parsedUrls.contains(art.uri)))
 
-    val articles = romeArts.map(gander.extend)
+    val articles = romeArts.map(gander.mainContent)
 
     articles.foreach { a =>
       println(s"${a.uri} ${a.keywords}")
