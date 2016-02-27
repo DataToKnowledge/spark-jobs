@@ -19,3 +19,5 @@ project/project/target
 .idea
 notebooks/.ipynb_checkpoints
 checkpoints/
+algocore/
+dockerfile/
