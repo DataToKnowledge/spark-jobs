@@ -4,7 +4,7 @@ this repository includes the base logis used to extract feeds from the web and t
 
 Execute
 ```bash
-init_subprojects.sh
+./init_subprojects.sh
 
 ```
 before developing. It will clone the dependent projects
