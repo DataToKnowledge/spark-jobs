@@ -2,12 +2,10 @@ package it.dtk.streaming
 
 import java.io.File
 
-import _root_.Tutorial._
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.twitter.TwitterUtils
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
-import scala.collection.mutable.HashMap
 import scala.io.Source
 
 /**
@@ -16,49 +14,45 @@ import scala.io.Source
 object TwitterStreaming {
 
   def main(args: Array[String]) : Unit = {
-    configureTwitterCredentials()
+    loadTwitterKeys()
 
     val sparkConf = new SparkConf().
-      setAppName("Streaming").
+      setAppName("StreamingTwitter").
       setMaster("local[*]")
-    // Create a local StreamingContext with a batch interval of 1 second.
+    // Create a local StreamingContext with a batch interval of 1 minute.
     // The master requires 2 cores to prevent from a starvation scenario.
-    val ssc = new StreamingContext(sparkConf, Seconds(1))
-    val tweets = TwitterUtils.createStream(ssc, None)
+    val ssc = new StreamingContext(sparkConf, Seconds(1*60))
 
-    val dstream= tweets.map(status => status.getUser)
+//    val filtre = new FilterQuery();
+//    filtre.follow(usuarios)
+    val query = Seq("bari", "roma", "milano")
+
+    val tweets = TwitterUtils.createStream(ssc, None, query).filter(_.getLang == "it")
+
+    val dstream= tweets.map(status => (status.getUser.getId, status.getText))
     dstream.print()
     ssc.start()             // Start the computation
     ssc.awaitTermination()
   }
 
-  def configureTwitterCredentials() = {
-    val twitterPath = getClass.getResource("/twitter.txt").getPath
-    println(twitterPath)
+
+  def loadTwitterKeys() = {
+    val twitterPath = getClass.getResource("/twitter.properties").getPath
+
     val file = new File(twitterPath)
     if (!file.exists) {
       throw new Exception("Could not find configuration file " + file)
     }
-    val lines = Source.fromFile(file.toString).getLines.filter(_.trim.size > 0).toSeq
-    val pairs = lines.map(line => {
-      val splits = line.split("=")
-      if (splits.size != 2) {
-        throw new Exception("Error parsing configuration file - incorrectly formatted line [" + line + "]")
-      }
-      (splits(0).trim(), splits(1).trim())
-    })
-    val map = new HashMap[String, String] ++= pairs
-    val configKeys = Seq("consumerKey", "consumerSecret", "accessToken", "accessTokenSecret")
-    println("Configuring Twitter OAuth")
-    configKeys.foreach(key => {
-      if (!map.contains(key)) {
-        throw new Exception("Error setting OAuth authenticaion - value for " + key + " not found")
-      }
-      val fullKey = "twitter4j.oauth." + key
-      System.setProperty(fullKey, map(key))
-
-      println("\tProperty " + fullKey + " set as " + map(key))
-    })
-    println()
+    val lines = Source.fromFile(file.toString).getLines.filter(_.trim.size > 0)
+    val props = lines.map(line => line.split("=")).map {
+      case (scala.Array(k, v)) => (k.trim, v.trim)
+      case line =>  throw new Exception("Error parsing configuration file - incorrectly formatted line [" + line + "]")
+    }
+    props.foreach {
+      case (k: String, v: String) =>
+        val fullKey = "twitter4j.oauth." + k
+        println("\tProperty " + k + " set as " + v)
+        System.setProperty(fullKey, v)
+    }
   }
 }
