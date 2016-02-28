@@ -27,6 +27,7 @@ trait StreamUtils {
           println(s"sending to kafka news with uri ${a.uri}")
           writer.send(a.uri.getBytes(), write(a).getBytes())
         }
+        writer.close()
       }
     }
   }
@@ -44,6 +45,8 @@ trait StreamUtils {
           println(s"sending to kafka tweet with id ${t.id}")
           writer.send(t.id.getBytes(), write(t).getBytes())
         }
+
+        writer.close()
       }
     }
   }

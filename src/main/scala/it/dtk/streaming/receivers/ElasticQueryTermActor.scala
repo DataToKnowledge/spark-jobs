@@ -41,4 +41,8 @@ class ElasticQueryTermActor(hosts: String, indexPath: String, clusterName: Strin
           log.error("got exception in {} with msg {}", s.path.name, ex.getMessage, ex)
       }
   }
+
+  override def postStop(): Unit ={
+    queryTermExtractor.close()
+  }
 }

@@ -38,7 +38,10 @@ class ElasticFeedActor(hosts: String, indexPath: String, clusterName: String,
         case Failure(ex) =>
           log.error("got exception in {} with msg {}", s.path.name, ex.getMessage, ex)
       }
+  }
 
 
+  override def postStop(): Unit ={
+    feedExtractor.close()
   }
 }
