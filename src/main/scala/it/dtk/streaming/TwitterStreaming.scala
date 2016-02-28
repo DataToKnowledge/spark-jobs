@@ -26,6 +26,8 @@ object TwitterStreaming {
     val ssc = new StreamingContext(sparkConf, Seconds(1))
     val tweets = TwitterUtils.createStream(ssc, None)
 
+    tweets.getReceiver().
+
     val dstream= tweets.map(status => status.getUser)
     dstream.print()
     ssc.start()             // Start the computation

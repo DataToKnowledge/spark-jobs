@@ -7,15 +7,11 @@ import org.apache.spark.streaming.receiver.ActorHelper
 import scala.concurrent.duration._
 import scala.util._
 
-object ElasticActorReceiver {
-
-}
-
 /**
   * Created by fabiofumarola on 27/02/16.
   */
-class ElasticActorReceiver(hosts: String, indexPath: String, clusterName: String,
-                           scheduleTime: FiniteDuration = 10.minutes) extends Actor with ActorHelper {
+class ElasticFeedActor(hosts: String, indexPath: String, clusterName: String,
+                       scheduleTime: FiniteDuration = 10.minutes) extends Actor with ActorHelper {
 
   import context.dispatcher
 

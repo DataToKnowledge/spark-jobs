@@ -3,7 +3,7 @@ package it.dtk.streaming
 import akka.actor.Props
 import it.dtk.dsl._
 import it.dtk.model.{Article, Feed, SchedulerData}
-import it.dtk.streaming.receivers.ElasticActorReceiver
+import it.dtk.streaming.receivers.ElasticFeedActor
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.dstream.DStream
 import org.apache.spark.streaming.{Seconds, Minutes, StreamingContext}
@@ -63,7 +63,7 @@ object ExtractFeeds extends StreamUtils {
 
     val nodes = esIPs.split(",").map(_ + ":9300").mkString(",")
     val feedsStream = ssc.actorStream[Feed](
-      Props(new ElasticActorReceiver(nodes, indexPath, clusterName)), "FeedsReceiver")
+      Props(new ElasticFeedActor(nodes, indexPath, clusterName)), "FeedsReceiver")
 
     feedsStream.count().foreachRDD { rdd =>
       println(s"Got ${rdd.collect()(0)} feeds from elasticsearch")

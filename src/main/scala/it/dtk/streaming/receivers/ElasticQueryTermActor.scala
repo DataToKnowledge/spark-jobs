@@ -12,8 +12,8 @@ import scala.util._
 /**
   * Created by fabiofumarola on 27/02/16.
   */
-class QueryTermActor(hosts: String, indexPath: String, clusterName: String,
-                     scheduleTime: FiniteDuration = 10.minutes) extends Actor with ActorHelper {
+class ElasticQueryTermActor(hosts: String, indexPath: String, clusterName: String,
+                            scheduleTime: FiniteDuration = 10.minutes) extends Actor with ActorHelper {
 
   import context.dispatcher
 
