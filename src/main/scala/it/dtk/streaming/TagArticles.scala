@@ -3,7 +3,7 @@ package it.dtk.streaming
 import akka.actor.Props
 import it.dtk.kafka.ConsumerProperties
 import it.dtk.model._
-import it.dtk.nlp.{DBpediaSpotLight, DBpedia}
+import it.dtk.nlp.{FocusLocation, DBpediaSpotLight, DBpedia}
 import it.dtk.streaming.receivers.KafkaFeedItemsActor
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.{Seconds, StreamingContext}
@@ -37,6 +37,9 @@ object TagArticles extends StreamUtils {
     var dbPediaBaseUrl = "http://192.168.99.100:2230"
     val lang = "it"
 
+    var esIPs = "192.168.99.100"
+    val locDocPath = "wtl/locations"
+
 
     val conf = new SparkConf()
       .setAppName(this.getClass.getName)
@@ -45,12 +48,14 @@ object TagArticles extends StreamUtils {
       case "local" =>
         kafkaBrokers = "localhost:9092"
         dbPediaBaseUrl = "http://localhost:2230"
+        esIPs = "locahost"
         conf.setMaster("local[*]")
 
       case "docker" =>
         conf.setMaster("local[*]")
 
       case "prod" =>
+        esIPs = "es-data-0,es-data-1,es-data-2"
         kafkaBrokers = "kafka-1:9092,kafka-2:9092,kafka-3:9092"
         dbPediaBaseUrl = "http://dbpedia_it:2230"
     }
@@ -80,17 +85,27 @@ object TagArticles extends StreamUtils {
 
     val enrichedArticles = taggedArticles.mapPartitions { it =>
       val dbpedia = DBpedia.getConnection(dbPediaBaseUrl, lang)
-      it.map { a =>
+      val result = it.map { a =>
         val enriched = a.annotations.map(ann => dbpedia.enrichAnnotation(ann))
         a.copy(annotations = enriched)
       }
+      DBpedia.closePool()
+      result
+    }
+    val nodes = esIPs.split(",").map(_ + ":9300").mkString(",")
+
+    val locationArticles = enrichedArticles.mapPartitions { it =>
+      val focusLoc = FocusLocation.getConnection(nodes, locDocPath, clusterName)
+
+      val result = it.map { a =>
+        val location = focusLoc.extract(a)
+        a.copy(focusLocation = location)
+      }
+      focusLoc.close()
+      result
     }
 
-//    val locationArticles = enrichedArticles.mapPartitions{ it =>
-//
-//    }
-
-    writeToKafka(enrichedArticles, kafkaBrokers, "tag_articles", writeTopic)
+    writeToKafka(locationArticles, kafkaBrokers, "tag_articles", writeTopic)
 
     ssc.start()
     ssc.awaitTermination()
@@ -99,21 +114,21 @@ object TagArticles extends StreamUtils {
   def annotateArticle(dbpedia: DBpediaSpotLight, a: Article): Article = {
 
     val titleAn = if (a.title.nonEmpty)
-      dbpedia.annotateText(a.title)
+      dbpedia.annotateText(a.title, DocumentSection.Title)
     else Seq.empty[Annotation]
 
     val descrAn = if (a.description.nonEmpty)
-      dbpedia.annotateText(a.description)
+      dbpedia.annotateText(a.description, DocumentSection.Summary)
     else Seq.empty[Annotation]
 
     val textAn = if (a.cleanedText.nonEmpty)
-      dbpedia.annotateText(a.cleanedText)
+      dbpedia.annotateText(a.cleanedText, DocumentSection.Corpus)
     else Seq.empty[Annotation]
 
     val mergedCatKey = (a.categories ++ a.keywords).mkString(" ")
 
     val keywordAn = if (mergedCatKey.nonEmpty)
-      dbpedia.annotateText(mergedCatKey)
+      dbpedia.annotateText(mergedCatKey, DocumentSection.KeyWords)
     else Seq.empty[Annotation]
 
     val annotations = titleAn ++ descrAn ++ textAn ++ keywordAn
