@@ -22,8 +22,11 @@ class KafkaFeedItemsActor(props: ConsumerProperties, beginning: Boolean = false)
   import context.dispatcher
 
   val consumer = new KafkaReader[Array[Byte], Array[Byte]](props)
-  consumer.poll()
-  consumer.consumer.seekToBeginning(new TopicPartition(props.topics,0))
+
+  if (beginning) {
+    consumer.poll()
+    consumer.consumer.seekToBeginning(new TopicPartition(props.topics, 0))
+  }
 
   context.system.scheduler.scheduleOnce(10 millis, self, "start")
 

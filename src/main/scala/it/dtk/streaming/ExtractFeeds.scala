@@ -73,7 +73,7 @@ object ExtractFeeds extends StreamUtils {
       .filter(_.schedulerData.time.isBeforeNow)
 
     val feedArticles = extractFeedItems(toCheckFeeds)
-    saveFeedsElastic(indexPath, feedArticles.map(_._1))
+    saveFeedsToElastic(indexPath, feedArticles.map(_._1))
 
     val mainContents = feedArticles.flatMap(_._2)
       .map(article => gander.mainContent(article))

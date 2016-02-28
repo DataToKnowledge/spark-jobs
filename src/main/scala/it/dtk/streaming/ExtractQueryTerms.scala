@@ -101,7 +101,7 @@ object ExtractQueryTerms extends StreamUtils {
           Feed(url, publisher, List.empty, Some(DateTime.now().minusMinutes(10))))
       }
 
-    saveFeedsElastic(feedsIndexPath, feedsToAdd)
+    saveFeedsToElastic(feedsIndexPath, feedsToAdd)
 
     ssc.start()
     ssc.awaitTermination()
