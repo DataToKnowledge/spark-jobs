@@ -2,8 +2,9 @@ package it.dtk.streaming
 
 import java.io.File
 
+import it.dtk.streaming.receivers.CustomTwitterInputDstream
+import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkConf
-import org.apache.spark.streaming.twitter.TwitterUtils
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
 import scala.io.Source
@@ -14,27 +15,47 @@ import scala.io.Source
 object TwitterStreaming {
 
   def main(args: Array[String]): Unit = {
-    loadTwitterKeys()
+    Logger.getRootLogger.setLevel(Level.ERROR)
 
+    TwitterStreaming.loadTwitterKeys()
+
+    TwitterStreaming.startStream()
+  }
+
+  def configureStreamingContext() = {
+    // Create a local StreamingContext with a batch interval of 1 minute.
+    // The master requires 2 cores to prevent from a starvation scenario.
     val sparkConf = new SparkConf().
       setAppName("StreamingTwitter").
       setMaster("local[*]")
+    new StreamingContext(sparkConf, Seconds(1*60))
+  }
+
+  def startStream() = {
+    val ssc: StreamingContext = TwitterStreaming.configureStreamingContext()
     // Create a local StreamingContext with a batch interval of 1 minute.
     // The master requires 2 cores to prevent from a starvation scenario.
-    val ssc = new StreamingContext(sparkConf, Seconds(1 * 60))
 
-    //    val filtre = new FilterQuery();
-    //    filtre.follow(usuarios)
-    val query = Seq("bari", "roma", "milano")
 
-    val tweets = TwitterUtils.createStream(ssc, None, query).filter(_.getLang == "it")
+   // val query = Seq("bari", "roma", "milano")
+    val ids = Seq(2453246745L, 419918470L) //LanotteFabiana e VittorioZucconi
+    //val tweets = TwitterUtils.createStream(ssc, None, query).filter(_.getLang == "it")
+    val tweets = new CustomTwitterInputDstream(ssc, None, Nil, ids).filter(_.getLang == "it")
 
-    val dstream = tweets.map(status => (status.getUser.getId, status.getText))
-    dstream.print()
+    // Print tweets batch count
+    tweets.foreachRDD(rdd => {
+      println("\nNew tweets %s:".format(rdd.count()))
+    })
+
+    //get users and tweetText
+    val users_text = tweets.map(status =>
+      (status.getUser.getScreenName, status.getText)
+    )
+    users_text.print()
+
     ssc.start() // Start the computation
     ssc.awaitTermination()
   }
-
 
   def loadTwitterKeys() = {
     val twitterPath = getClass.getResource("/twitter.properties").getPath
