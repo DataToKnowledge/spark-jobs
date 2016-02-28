@@ -86,9 +86,9 @@ object TagArticles extends StreamUtils {
       }
     }
 
-    val locationArticles = enrichedArticles.mapPartitions{ it =>
-
-    }
+//    val locationArticles = enrichedArticles.mapPartitions{ it =>
+//
+//    }
 
     writeToKafka(enrichedArticles, kafkaBrokers, "tag_articles", writeTopic)
 
