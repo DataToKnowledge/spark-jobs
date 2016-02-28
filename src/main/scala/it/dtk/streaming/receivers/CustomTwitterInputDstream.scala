@@ -31,11 +31,11 @@ class CustomTwitterInputDstream (
 }
 
 class CustomTwitterReceiver(
-                       twitterAuth: Authorization,
-                       filters: Seq[String],
-                       usersID: Seq[Long],
-                       storageLevel: StorageLevel
-                     ) extends Receiver[Status](storageLevel) with Logging {
+                             twitterAuth: Authorization,
+                             filters: Seq[String],
+                             usersID: Seq[Long],
+                             storageLevel: StorageLevel
+                           ) extends Receiver[Status](storageLevel) with Logging {
 
   @volatile private var twitterStream: TwitterStream = _
   @volatile private var stopped = false
@@ -60,18 +60,16 @@ class CustomTwitterReceiver(
       })
 
       val query = new FilterQuery
-      if(usersID.nonEmpty) {
-        //val longsIDS = usersID.map(_.toLong)
-        query.follow(usersID: _*)
-      }
 
-      if (filters.size > 0) {
-        query.track(filters.mkString(","))
-        newTwitterStream.filter(query)
-      } else {
+      if(usersID.isEmpty & filters.isEmpty)
         newTwitterStream.sample()
-      }
+
+      if(usersID.nonEmpty)
+        query.follow(usersID: _*)
+
+      newTwitterStream.filter(query)
       setTwitterStream(newTwitterStream)
+
       logInfo("Twitter receiver started")
       stopped = false
     } catch {

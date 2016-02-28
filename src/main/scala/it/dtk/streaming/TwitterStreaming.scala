@@ -36,12 +36,11 @@ object TwitterStreaming {
     // Create a local StreamingContext with a batch interval of 1 minute.
     // The master requires 2 cores to prevent from a starvation scenario.
 
-    //    val filtre = new FilterQuery();
-    //    filtre.follow(usuarios)
-    val query = Seq("bari", "roma", "milano")
-    val ids = Seq(2453246745L, 419918470L)
+
+   // val query = Seq("bari", "roma", "milano")
+    val ids = Seq(2453246745L, 419918470L) //LanotteFabiana e VittorioZucconi
     //val tweets = TwitterUtils.createStream(ssc, None, query).filter(_.getLang == "it")
-    val tweets = new CustomTwitterInputDstream(ssc, None, query, ids).filter(_.getLang == "it")
+    val tweets = new CustomTwitterInputDstream(ssc, None, Nil, ids).filter(_.getLang == "it")
 
     // Print tweets batch count
     tweets.foreachRDD(rdd => {
@@ -54,10 +53,6 @@ object TwitterStreaming {
     )
     users_text.print()
 
-    val dstream = tweets.map(status => (status.getUser.getId, status.getText))
-    dstream.print()
-
-    
     ssc.start() // Start the computation
     ssc.awaitTermination()
   }
