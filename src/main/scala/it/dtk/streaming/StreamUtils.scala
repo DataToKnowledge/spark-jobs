@@ -70,6 +70,17 @@ trait StreamUtils {
     }
   }
 
+
+  def saveArticleToElastic(indexPath: String, dStream: DStream[Article]): Unit = {
+    dStream.foreachRDD { rdd =>
+      rdd.map { a =>
+        implicit val formats = Serialization.formats(NoTypeHints) ++ JodaTimeSerializers.all
+        println("save article to es")
+        write(a)
+      }.saveJsonToEs(indexPath, Map("es.mapping.id" -> "uri"))
+    }
+  }
+
   def loadQueryTerms(ssc: StreamingContext, indexPath: String): Array[QueryTerm] = {
     ssc.sparkContext.esJsonRDD(indexPath)
       .map { id_json =>
