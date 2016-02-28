@@ -119,6 +119,4 @@ object ExtractQueryTerms extends StreamUtils {
       }
     }
   }
-
-
 }

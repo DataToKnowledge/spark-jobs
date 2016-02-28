@@ -68,6 +68,8 @@ object ArticleToElastic extends StreamUtils {
       Props(new KafkaArticlesActor(consProps)), "write_articles"
     )
 
+
+
   }
 
 }

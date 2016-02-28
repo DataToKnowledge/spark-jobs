@@ -1,18 +1,15 @@
 package it.dtk.streaming
 
 import it.dtk.kafka.{KafkaWriter, ProducerProperties}
-import it.dtk.model.{Tweet, Article, Feed}
-import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
+import it.dtk.model.{Article, Feed, Tweet, _}
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.dstream.DStream
 import org.elasticsearch.spark._
 import org.json4s.NoTypeHints
 import org.json4s.ext.JodaTimeSerializers
+import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization
 import org.json4s.jackson.Serialization._
-import it.dtk.model._
-import org.json4s.jackson.JsonMethods._
 
 
 /**
