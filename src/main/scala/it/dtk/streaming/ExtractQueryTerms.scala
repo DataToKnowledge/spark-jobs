@@ -18,7 +18,7 @@ import scala.concurrent.ExecutionContext
 /**
   * Created by fabiofumarola on 27/02/16.
   */
-object KeywordExtraction extends StreamUtils {
+object ExtractQueryTerms extends StreamUtils {
 
   def main(args: Array[String]) {
     if (args.isEmpty) {
@@ -27,7 +27,7 @@ object KeywordExtraction extends StreamUtils {
         """
           |example
           | ./bin/spark-submit \
-          |  --class it.dtk.jobs.ExtractFeeds \
+          |  --class it.dtk.streaming.ExtractQueryTerms \
           |  --master spark://spark-master-0 \
           |  --executor-memory 2G \
           |  --total-executor-cores 5 \

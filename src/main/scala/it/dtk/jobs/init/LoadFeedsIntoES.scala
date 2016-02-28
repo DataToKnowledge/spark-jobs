@@ -1,6 +1,5 @@
 package it.dtk.jobs.init
 
-import it.dtk.FakeDB
 import it.dtk.model.Feed
 import org.apache.spark.{SparkConf, SparkContext}
 import org.elasticsearch.spark._

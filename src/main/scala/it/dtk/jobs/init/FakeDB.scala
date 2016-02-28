@@ -1,4 +1,4 @@
-package it.dtk
+package it.dtk.jobs.init
 
 import it.dtk.model._
 import org.joda.time.DateTime
