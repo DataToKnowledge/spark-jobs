@@ -5,7 +5,7 @@ import java.util.concurrent.Executors
 import akka.actor.Props
 import it.dtk.es.ElasticQueryTerms
 import it.dtk.model.{Feed, QueryTerm}
-import it.dtk.streaming.receivers.QueryTermActor
+import it.dtk.streaming.receivers.ElasticQueryTermActor
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.dstream.DStream
 import org.apache.spark.streaming.{Seconds, StreamingContext}
@@ -68,7 +68,7 @@ object ExtractQueryTerms extends StreamUtils {
 
     val nodes = esIPs.split(",").map(_ + ":9300").mkString(",")
     val queryTermStream = ssc.actorStream[QueryTerm](
-      Props(new QueryTermActor(nodes, queryTermIndexPath, clusterName)), "QueryTermReceiver"
+      Props(new ElasticQueryTermActor(nodes, queryTermIndexPath, clusterName)), "QueryTermReceiver"
     )
 
     queryTermStream.count().foreachRDD { rdd =>

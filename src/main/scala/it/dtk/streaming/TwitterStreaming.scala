@@ -14,7 +14,7 @@ import scala.io.Source
   */
 object TwitterStreaming {
 
-  def main(args: Array[String]) : Unit = {
+  def main(args: Array[String]): Unit = {
     Logger.getRootLogger.setLevel(Level.ERROR)
 
     TwitterStreaming.loadTwitterKeys()
@@ -28,12 +28,14 @@ object TwitterStreaming {
     val sparkConf = new SparkConf().
       setAppName("StreamingTwitter").
       setMaster("local[*]")
-
     new StreamingContext(sparkConf, Seconds(1*60))
   }
 
   def startStream() = {
     val ssc: StreamingContext = TwitterStreaming.configureStreamingContext()
+    // Create a local StreamingContext with a batch interval of 1 minute.
+    // The master requires 2 cores to prevent from a starvation scenario.
+
     //    val filtre = new FilterQuery();
     //    filtre.follow(usuarios)
     val query = Seq("bari", "roma", "milano")
@@ -52,7 +54,11 @@ object TwitterStreaming {
     )
     users_text.print()
 
-    ssc.start()             // Start the computation
+    val dstream = tweets.map(status => (status.getUser.getId, status.getText))
+    dstream.print()
+
+    
+    ssc.start() // Start the computation
     ssc.awaitTermination()
   }
 
@@ -66,7 +72,7 @@ object TwitterStreaming {
     val lines = Source.fromFile(file.toString).getLines.filter(_.trim.size > 0)
     val props = lines.map(line => line.split("=")).map {
       case (scala.Array(k, v)) => (k.trim, v.trim)
-      case line =>  throw new Exception("Error parsing configuration file - incorrectly formatted line [" + line + "]")
+      case line => throw new Exception("Error parsing configuration file - incorrectly formatted line [" + line + "]")
     }
     props.foreach {
       case (k: String, v: String) =>
