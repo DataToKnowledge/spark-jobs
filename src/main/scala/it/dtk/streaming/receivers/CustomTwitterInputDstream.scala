@@ -66,6 +66,8 @@ class CustomTwitterReceiver(
 
       if(usersID.nonEmpty)
         query.follow(usersID: _*)
+      if(filters.nonEmpty)
+        query.track(filters.mkString(","))
 
       newTwitterStream.filter(query)
       setTwitterStream(newTwitterStream)
