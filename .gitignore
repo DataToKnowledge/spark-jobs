@@ -18,6 +18,6 @@ project/project/target
 .worksheet
 .idea
 notebooks/.ipynb_checkpoints
-checkpoints/
+checkpoint/
 algocore/
 dockerfile/

@@ -1,16 +1,12 @@
 package it.dtk.streaming
 
-import it.dtk.nlp.DBpedia
-import kafka.serializer.StringDecoder
-import org.apache.spark.SparkConf
-import org.apache.spark.streaming.kafka.KafkaUtils
-import org.apache.spark.streaming.{Seconds, StreamingContext}
-import org.json4s._
-import org.json4s.jackson.JsonMethods._
-import org.json4s.jackson.Serialization
-import org.json4s.jackson.Serialization.write
+import akka.actor.Props
+import it.dtk.kafka.ConsumerProperties
 import it.dtk.model._
-import it.dtk.dsl._
+import it.dtk.nlp.{DBpediaSpotLight, DBpedia}
+import it.dtk.streaming.receivers.KafkaFeedItemsActor
+import org.apache.spark.SparkConf
+import org.apache.spark.streaming.{Seconds, StreamingContext}
 
 /**
   * Created by fabiofumarola on 28/02/16.
@@ -59,41 +55,30 @@ object TagArticles extends StreamUtils {
         dbPediaBaseUrl = "http://dbpedia_it:2230"
     }
 
-    val ssc = new StreamingContext(conf, Seconds(30))
+    val ssc = new StreamingContext(conf, Seconds(10))
 
-    val inTopicSet = readTopic.split(",").toSet
-    val kafkaParams = Map[String, String](
-      "metadata.broker.list" -> kafkaBrokers,
-      " auto.offset.reset" -> "smallest"
+    val consProps = ConsumerProperties(
+      brokers = kafkaBrokers,
+      topics = readTopic,
+      groupName = "tag_articles"
     )
 
-    val feedItems = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](
-      ssc, kafkaParams, inTopicSet
+    val feedItemStream = ssc.actorStream[(String, Article)](
+      Props(new KafkaFeedItemsActor(consProps)), "read_articles"
     )
 
-    val distinctArticles = feedItems
+    val distinctArticles = feedItemStream
       .transform(rdd => rdd.distinct())
-      .map { case (url, strArticle) =>
-        implicit val formats = Serialization.formats(NoTypeHints)
-        parse(strArticle).extract[Article]
-      }
+      .map(_._2)
+
 
     val taggedArticles = distinctArticles
       .mapPartitions { it =>
         val dbpedia = DBpedia.getConnection(dbPediaBaseUrl, lang)
-
-        it.map { a =>
-          val titleAn = dbpedia.annotateText(a.title)
-          val descrAn = dbpedia.annotateText(a.description)
-          val textAn = dbpedia.annotateText(a.cleanedText)
-          val mergedCatKey = (a.categories ++ a.keywords).mkString(" ")
-          val keywordAn = dbpedia.annotateText(mergedCatKey)
-          val annotations = titleAn ++ descrAn ++ textAn ++ keywordAn
-          a.copy(annotations = annotations.toList)
-        }
+        it.map(a => annotateArticle(dbpedia, a))
       }
 
-    val enrichArticles = taggedArticles.mapPartitions { it =>
+    val enrichedArticles = taggedArticles.mapPartitions { it =>
       val dbpedia = DBpedia.getConnection(dbPediaBaseUrl, lang)
       it.map { a =>
         val enriched = a.annotations.map(ann => dbpedia.enrichAnnotation(ann))
@@ -101,10 +86,52 @@ object TagArticles extends StreamUtils {
       }
     }
 
-    writeToKafka(enrichArticles, kafkaBrokers, "tag_articles", writeTopic)
+    val locationArticles = enrichedArticles.mapPartitions{ it =>
+
+    }
+
+    writeToKafka(enrichedArticles, kafkaBrokers, "tag_articles", writeTopic)
 
     ssc.start()
     ssc.awaitTermination()
   }
 
+  def annotateArticle(dbpedia: DBpediaSpotLight, a: Article): Article = {
+
+    val titleAn = if (a.title.nonEmpty)
+      dbpedia.annotateText(a.title)
+    else Seq.empty[Annotation]
+
+    val descrAn = if (a.description.nonEmpty)
+      dbpedia.annotateText(a.description)
+    else Seq.empty[Annotation]
+
+    val textAn = if (a.cleanedText.nonEmpty)
+      dbpedia.annotateText(a.cleanedText)
+    else Seq.empty[Annotation]
+
+    val mergedCatKey = (a.categories ++ a.keywords).mkString(" ")
+
+    val keywordAn = if (mergedCatKey.nonEmpty)
+      dbpedia.annotateText(mergedCatKey)
+    else Seq.empty[Annotation]
+
+    val annotations = titleAn ++ descrAn ++ textAn ++ keywordAn
+    a.copy(annotations = annotations.toList)
+  }
+
 }
+
+
+//    val inTopicSet = readTopic.split(",").toSet
+//    val kafkaParams = Map[String, String](
+//      "bootstrap.servers" -> kafkaBrokers,
+//      "group.id" -> "feed_items",
+//      "enable.auto.commit" -> "true",
+//      "key.deserializer" -> "org.apache.kafka.common.serialization.ByteArrayDeserializer",
+//      "value.deserializer" -> "org.apache.kafka.common.serialization.ByteArrayDeserializer"
+//    )
+//
+//    val feedItems = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](
+//      ssc, kafkaParams, inTopicSet
+//    )
