@@ -63,17 +63,18 @@ class CustomTwitterReceiver(
 
       if(usersID.isEmpty & filters.isEmpty)
         newTwitterStream.sample()
+      else {
+        if (usersID.nonEmpty)
+          query.follow(usersID: _*)
+        if (filters.nonEmpty)
+          query.track(filters.mkString(","))
 
-      if(usersID.nonEmpty)
-        query.follow(usersID: _*)
-      if(filters.nonEmpty)
-        query.track(filters.mkString(","))
+        newTwitterStream.filter(query)
+        setTwitterStream(newTwitterStream)
 
-      newTwitterStream.filter(query)
-      setTwitterStream(newTwitterStream)
-
-      logInfo("Twitter receiver started")
-      stopped = false
+        logInfo("Twitter receiver started")
+        stopped = false
+      }
     } catch {
       case e: Exception => restart("Error starting Twitter stream", e)
     }
