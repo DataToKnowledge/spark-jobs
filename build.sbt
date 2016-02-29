@@ -16,10 +16,10 @@ lazy val root = (project in file("."))
     name := "spark-jobs",
     libraryDependencies ++= Seq(
       "org.apache.spark" %% "spark-core" % "1.6.0" % "provided",
-      "org.apache.spark" %% "spark-sql" % "1.6.0",
-      "org.apache.spark" %% "spark-streaming" % "1.6.0",
-      "org.apache.spark" %% "spark-streaming-kafka" % "1.6.0",
-      "org.apache.spark" %% "spark-streaming-twitter" % "1.6.0",
+      "org.apache.spark" %% "spark-sql" % "1.6.0" % "provided",
+      "org.apache.spark" %% "spark-streaming" % "1.6.0" % "provided",
+      "org.apache.spark" %% "spark-streaming-kafka" % "1.6.0" % "provided",
+      "org.apache.spark" %% "spark-streaming-twitter" % "1.6.0" % "provided",
       "org.elasticsearch" %% "elasticsearch-spark" % "2.2.0"
     ),
     libraryDependencies ~= {
@@ -31,6 +31,10 @@ lazy val root = (project in file("."))
 lazy val algocore = (project in file("./algocore"))
   .settings(commons: _*)
   .settings(name := "algocore")
+
+assemblyShadeRules in assembly := Seq(
+  ShadeRule.rename("com.google.**" -> "shadeio.@1").inAll
+)
 
 assemblyMergeStrategy in assembly := {
   case m if m.toLowerCase.endsWith("manifest.mf") => MergeStrategy.discard
