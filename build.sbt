@@ -15,7 +15,7 @@ lazy val root = (project in file("."))
   .settings(
     name := "spark-jobs",
     libraryDependencies ++= Seq(
-      "org.apache.spark" %% "spark-core" % "1.6.0",
+      "org.apache.spark" %% "spark-core" % "1.6.0" % "provided",
       "org.apache.spark" %% "spark-sql" % "1.6.0",
       "org.apache.spark" %% "spark-streaming" % "1.6.0",
       "org.apache.spark" %% "spark-streaming-kafka" % "1.6.0",
@@ -32,3 +32,13 @@ lazy val algocore = (project in file("./algocore"))
   .settings(commons: _*)
   .settings(name := "algocore")
 
+assemblyMergeStrategy in assembly := {
+  case m if m.toLowerCase.endsWith("manifest.mf") => MergeStrategy.discard
+  case m if m.startsWith("META-INF") => MergeStrategy.discard
+  case PathList("javax", "servlet", xs @ _*) => MergeStrategy.first
+  case PathList("org", "apache", xs @ _*) => MergeStrategy.first
+  case PathList("org", "jboss", xs @ _*) => MergeStrategy.first
+  case "about.html"  => MergeStrategy.rename
+  case "reference.conf" => MergeStrategy.concat
+  case _ => MergeStrategy.first
+}
