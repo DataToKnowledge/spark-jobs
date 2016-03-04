@@ -30,6 +30,9 @@ lazy val root = (project in file("."))
     libraryDependencies ~= {
       _.map(_.exclude("org.slf4j", "slf4j-log4j12"))
     },
+//    libraryDependencies ~= {
+//      _.map(_.exclude("org.jboss", "netty-3.10.5"))
+//    },
     defaultScalariformSettings
   ) dependsOn algocore
 
@@ -49,6 +52,7 @@ assemblyMergeStrategy in assembly := {
   case m if m.startsWith("META-INF") => MergeStrategy.discard
   case PathList("javax", "servlet", xs @ _*) => MergeStrategy.first
   case PathList("org", "apache", xs @ _*) => MergeStrategy.first
+  case PathList("org", "jboss.netty", xs @ _*) => MergeStrategy.discard
 //  case PathList("org", "jboss", xs @ _*) => MergeStrategy.first
   case "about.html"  => MergeStrategy.rename
   case "reference.conf" => MergeStrategy.concat
