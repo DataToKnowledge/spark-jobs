@@ -1,7 +1,7 @@
 lazy val commons = Seq(
   organization := "it.datatoknowledge",
   version := "0.1.0",
-  scalaVersion := "2.11.7",
+  scalaVersion := "2.10.6",
   scalacOptions ++= Seq("-target:jvm-1.7"), //, "-feature"
   resolvers ++= Seq(
     "spray repo" at "http://repo.spray.io",
@@ -20,7 +20,12 @@ lazy val root = (project in file("."))
       "org.apache.spark" %% "spark-streaming" % "1.6.0" % "provided",
       "org.apache.spark" %% "spark-streaming-kafka" % "1.6.0" % "provided",
       "org.apache.spark" %% "spark-streaming-twitter" % "1.6.0" % "provided",
-      "org.elasticsearch" %% "elasticsearch-spark" % "2.2.0"
+      ("org.elasticsearch" %% "elasticsearch-spark" % "2.2.0").
+        exclude("com.google.guava", "guava").
+        exclude("org.apache.hadoop", "hadoop-yarn-api").
+        exclude("org.eclipse.jetty.orbit", "javax.mail.glassfish").
+        exclude("org.eclipse.jetty.orbit", "javax.servlet").
+        exclude("org.slf4j", "slf4j-api")
     ),
     libraryDependencies ~= {
       _.map(_.exclude("org.slf4j", "slf4j-log4j12"))
@@ -31,11 +36,14 @@ lazy val root = (project in file("."))
 lazy val algocore = (project in file("./algocore"))
   .settings(commons: _*)
   .settings(name := "algocore")
+  .dependsOn(gander)
 
-//assemblyShadeRules in assembly := Seq(
-//  ShadeRule.rename("com.google.**" -> "shadeio.@1").inAll
-//)
-//
+lazy val gander = (project in file("./gander"))
+  .settings(commons: _*)
+  .settings(name := "gander")
+
+
+
 assemblyMergeStrategy in assembly := {
   case m if m.toLowerCase.endsWith("manifest.mf") => MergeStrategy.discard
   case m if m.startsWith("META-INF") => MergeStrategy.discard

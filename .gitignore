@@ -21,3 +21,5 @@ notebooks/.ipynb_checkpoints
 checkpoint/
 algocore/
 dockerfile/
+gander/
+.DS_Store
