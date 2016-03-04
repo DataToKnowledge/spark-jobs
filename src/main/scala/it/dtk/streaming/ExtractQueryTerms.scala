@@ -84,6 +84,8 @@ object ExtractQueryTerms extends StreamUtils {
       .flatMap(u => terms.getResultsAsArticles(u))
       .map(a => gander.mainContent(a))
 
+    articles.print(5)
+
     writeToKafka(articles, kafkaBrokers, "query_term_extractor", topic)
 
     saveQueryTerms(nodes, queryTermIndexPath, clusterName,
