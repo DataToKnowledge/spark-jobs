@@ -75,11 +75,13 @@ object ExtractQueryTerms extends StreamUtils {
       println(s"Got ${rdd.collect()(0)} query terms from elasticsearch")
     }
 
+    queryTermStream.print(5)
+
     val toCheckQueryTerms = queryTermStream
       .filter(_.timestamp.
         getOrElse(DateTime.now().minusMinutes(10)).isBeforeNow)
 
-    toCheckQueryTerms.print(10)
+    toCheckQueryTerms.print(5)
 
     val articles = toCheckQueryTerms
       .flatMap(q => terms.generateUrls(q.terms, q.lang, "wheretolive.it"))
