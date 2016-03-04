@@ -57,7 +57,7 @@ object ExtractQueryTerms extends StreamUtils {
         conf.setMaster("local[*]")
 
       case "prod" =>
-        esIPs = "es-data-0,es-data-1,es-data-2"
+        esIPs = "es-data-1,es-data-2,es-data-3"
         kafkaBrokers = "kafka-1:9092,kafka-2:9092,kafka-3:9092"
     }
 
