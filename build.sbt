@@ -15,16 +15,21 @@ lazy val root = (project in file("."))
   .settings(
     name := "spark-jobs",
     libraryDependencies ++= Seq(
-      "org.apache.spark" %% "spark-core" % "1.6.0" % "provided"  exclude("io.netty", "netty-all"),
-      "org.apache.spark" %% "spark-sql" % "1.6.0" % "provided"  exclude("io.netty", "netty-all"),
-      "org.apache.spark" %% "spark-streaming" % "1.6.0" % "provided"  exclude("io.netty", "netty-all"),
-      "org.apache.spark" %% "spark-streaming-kafka" % "1.6.0" % "provided"  exclude("io.netty", "netty-all"),
+      "org.apache.spark" %% "spark-core" % "1.6.0" % "provided",
+      "org.apache.spark" %% "spark-sql" % "1.6.0" % "provided",
+      "org.apache.spark" %% "spark-streaming" % "1.6.0" % "provided",
+      "org.apache.spark" %% "spark-streaming-kafka" % "1.6.0" % "provided",
       "org.apache.spark" %% "spark-streaming-twitter" % "1.6.0" % "provided",
-      "org.elasticsearch" %% "elasticsearch-spark" % "2.2.0"
+      "org.elasticsearch" %% "elasticsearch-spark" % "2.2.0",
+      "io.netty" % "netty" % "3.10.5.Final"
     ),
     libraryDependencies ~= {
       _.map(_.exclude("org.slf4j", "slf4j-log4j12"))
     },
+    libraryDependencies ~= {
+      _.map(_.exclude("io.netty", "netty-all"))
+    },
+
     defaultScalariformSettings
   ) dependsOn algocore
 
@@ -44,7 +49,7 @@ assemblyMergeStrategy in assembly := {
   case m if m.startsWith("META-INF") => MergeStrategy.discard
   case PathList("javax", "servlet", xs@_*) => MergeStrategy.first
   case PathList("org", "apache", xs@_*) => MergeStrategy.first
-  case PathList("io", "netty", xs@_*) => MergeStrategy.first
+  case PathList("io", "netty", xs@_*) => MergeStrategy.last
   case PathList("org", "jboss", xs @ _*) => MergeStrategy.first
   case "about.html" => MergeStrategy.rename
   case "reference.conf" => MergeStrategy.concat
