@@ -64,7 +64,7 @@ object ExtractQueryTerms extends StreamUtils {
     conf.set("es.nodes.wan.only", "true")
     conf.set("es.nodes", esIPs)
 
-    val ssc = new StreamingContext(conf, Seconds(30))
+    val ssc = new StreamingContext(conf, Seconds(10))
 
     val nodes = esIPs.split(",").map(_ + ":9300").mkString(",")
     val queryTermStream = ssc.actorStream[QueryTerm](
@@ -76,7 +76,8 @@ object ExtractQueryTerms extends StreamUtils {
     }
 
     val toCheckQueryTerms = queryTermStream
-      .filter(_.timestamp.get.isBeforeNow)
+      .filter(_.timestamp.
+        getOrElse(DateTime.now().minusMinutes(10)).isBeforeNow)
 
     val articles = toCheckQueryTerms
       .flatMap(q => terms.generateUrls(q.terms, q.lang, "wheretolive.it"))

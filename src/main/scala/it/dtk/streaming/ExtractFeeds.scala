@@ -59,7 +59,7 @@ object ExtractFeeds extends StreamUtils {
     conf.set("es.nodes.wan.only", "true")
     conf.set("es.nodes", esIPs)
 
-    val ssc = new StreamingContext(conf, Seconds(30))
+    val ssc = new StreamingContext(conf, Seconds(10))
 
     val nodes = esIPs.split(",").map(_ + ":9300").mkString(",")
     val feedsStream = ssc.actorStream[Feed](

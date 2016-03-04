@@ -76,7 +76,7 @@ object TwitterStreaming extends StreamUtils {
   def configureStreamingContext(conf: SparkConf) = {
     // Create a local StreamingContext with a batch interval of 1 minute.
     // The master requires 2 cores to prevent from a starvation scenario.
-    new StreamingContext(conf, Seconds(1*60))
+    new StreamingContext(conf, Seconds(30))
   }
 
   def startStream(ssc:StreamingContext, query: Seq[String], followers: Seq[Long]) = {
