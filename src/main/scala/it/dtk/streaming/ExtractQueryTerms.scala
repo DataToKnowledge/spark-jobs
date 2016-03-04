@@ -79,6 +79,8 @@ object ExtractQueryTerms extends StreamUtils {
       .filter(_.timestamp.
         getOrElse(DateTime.now().minusMinutes(10)).isBeforeNow)
 
+    toCheckQueryTerms.print(10)
+
     val articles = toCheckQueryTerms
       .flatMap(q => terms.generateUrls(q.terms, q.lang, "wheretolive.it"))
       .flatMap(u => terms.getResultsAsArticles(u))
