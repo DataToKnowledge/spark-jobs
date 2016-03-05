@@ -13,7 +13,7 @@ import scala.util._
   * Created by fabiofumarola on 27/02/16.
   */
 class ElasticQueryTermActor(hosts: String, indexPath: String, clusterName: String,
-                            scheduleTime: FiniteDuration = 10.minutes) extends Actor with ActorHelper {
+                            scheduleTime: FiniteDuration = 10.seconds) extends Actor with ActorHelper {
 
   import context.dispatcher
 
@@ -24,21 +24,21 @@ class ElasticQueryTermActor(hosts: String, indexPath: String, clusterName: Strin
 
   override def receive: Receive = {
     case "extract" =>
-      val s = self
+//      val s = self
 
       queryTermExtractor.listQueryTerms(from) onComplete {
         case Success(queryTerms) =>
           if (queryTerms.nonEmpty) {
             queryTerms.foreach(qt => store(qt))
             from += queryTerms.size
-            s ! "extract"
+//            s ! "extract"
           } else {
             log.debug("reset the from position to {}", 0)
             from = 0
           }
 
         case Failure(ex) =>
-          log.error("got exception in {} with msg {}", s.path.name, ex.getMessage, ex)
+          log.error("got exception in {} with msg {}", "ElasticQueryTerm", ex.getMessage, ex)
       }
   }
 

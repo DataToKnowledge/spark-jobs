@@ -1,5 +1,8 @@
 package it.dtk.streaming
 
+import java.io.ByteArrayOutputStream
+
+import com.gensler.scalavro.types.AvroType
 import it.dtk.kafka.{KafkaWriter, ProducerProperties}
 import it.dtk.model.{Article, Feed, Tweet, _}
 import org.apache.spark.streaming.StreamingContext
@@ -29,6 +32,29 @@ trait StreamUtils {
         it.foreach { a =>
           println(s"sending to kafka news with uri ${a.uri}")
           writer.send(a.uri.getBytes(), write(a).getBytes())
+        }
+        writer.close()
+      }
+    }
+  }
+
+  def writeToKafkaAvro(dStream: DStream[Article], brokers: String, clientId: String, topic: String): Unit = {
+    val props = ProducerProperties(brokers, topic, clientId)
+    val articleAvroType = AvroType[Article]
+
+    dStream.foreachRDD { rdd =>
+
+      rdd.foreachPartition { it =>
+        implicit val formats = Serialization.formats(NoTypeHints) ++ JodaTimeSerializers.all
+
+        val writer = KafkaWriter.getConnection(props)
+        val buf = new ByteArrayOutputStream()
+
+        it.foreach { a =>
+          println(s"sending to kafka news with uri ${a.uri}")
+          articleAvroType.io.write(a, buf)
+          writer.send(a.uri.getBytes(), buf.toByteArray)
+          buf.reset()
         }
         writer.close()
       }
