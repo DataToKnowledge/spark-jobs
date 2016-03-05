@@ -37,8 +37,6 @@ lazy val gander = (project in file("./gander"))
   .settings(commons: _*)
   .settings(name := "gander")
 
-
-
 assemblyMergeStrategy in assembly := {
   case m if m.toLowerCase.endsWith("manifest.mf") => MergeStrategy.discard
   case m if m.startsWith("META-INF") => MergeStrategy.discard
