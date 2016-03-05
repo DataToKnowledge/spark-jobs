@@ -75,20 +75,20 @@ object ExtractQueryTerms extends StreamUtils {
       println(s"Got ${rdd.collect()(0)} query terms from elasticsearch")
     }
 
-    queryTermStream.print(5)
+    queryTermStream.print(2)
 
     val toCheckQueryTerms = queryTermStream
       .filter(_.timestamp.
         getOrElse(DateTime.now().minusMinutes(10)).isBeforeNow)
 
-    toCheckQueryTerms.print(5)
+    toCheckQueryTerms.print(2)
 
     val articles = toCheckQueryTerms
       .flatMap(q => terms.generateUrls(q.terms, q.lang, "wheretolive.it"))
       .flatMap(u => terms.getResultsAsArticles(u))
       .map(a => gander.mainContent(a))
 
-    articles.print(5)
+    articles.print(1)
 
     writeToKafka(articles, kafkaBrokers, "query_term_extractor", topic)
 
