@@ -69,7 +69,7 @@ object TagArticles extends StreamUtils {
     )
 
     val feedItemStream = ssc.actorStream[(String, Article)](
-      Props(new KafkaFeedItemsActor(consProps, true)), "read_articles"
+      Props(new KafkaFeedItemsActor(consProps, false)), "read_articles"
     )
 
     feedItemStream.print(1)
