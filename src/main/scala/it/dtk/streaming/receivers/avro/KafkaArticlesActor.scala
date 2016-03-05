@@ -26,6 +26,7 @@ class KafkaArticlesActor(props: ConsumerProperties, beginning: Boolean = false) 
   if (beginning) {
     consumer.poll()
     consumer.consumer.seekToBeginning(new TopicPartition(props.topics, 0))
+    consumer.consumer.seekToBeginning(new TopicPartition(props.topics, 1))
   }
 
   context.system.scheduler.scheduleOnce(50 millis, self, "start")
@@ -33,11 +34,14 @@ class KafkaArticlesActor(props: ConsumerProperties, beginning: Boolean = false) 
   override def receive: Receive = {
 
     case "start" =>
+      var i = 0
       consumer.poll().foreach { rec =>
         val url = new String(rec.key())
         val article = parse(new String(rec.value())).extract[Article]
         store(url -> article)
+        i +=1
       }
+      log.info("extracted {} articles", i)
       self ! "start"
   }
 
