@@ -20,16 +20,11 @@ lazy val root = (project in file("."))
       "org.apache.spark" %% "spark-streaming" % "1.6.0" % "provided",
       "org.apache.spark" %% "spark-streaming-kafka" % "1.6.0" % "provided",
       "org.apache.spark" %% "spark-streaming-twitter" % "1.6.0" % "provided",
-      "org.elasticsearch" %% "elasticsearch-spark" % "2.2.0",
-      "io.netty" % "netty" % "3.10.5.Final"
+      "org.elasticsearch" %% "elasticsearch-spark" % "2.2.0"
     ),
     libraryDependencies ~= {
       _.map(_.exclude("org.slf4j", "slf4j-log4j12"))
     },
-    libraryDependencies ~= {
-      _.map(_.exclude("io.netty", "netty-all"))
-    },
-
     defaultScalariformSettings
   ) dependsOn algocore
 
@@ -49,9 +44,9 @@ assemblyMergeStrategy in assembly := {
   case m if m.startsWith("META-INF") => MergeStrategy.discard
   case PathList("javax", "servlet", xs@_*) => MergeStrategy.first
   case PathList("org", "apache", xs@_*) => MergeStrategy.first
-  case PathList("io", "netty", xs@_*) => MergeStrategy.last
+  case PathList("io", "netty", xs@_*) => MergeStrategy.first
   case PathList("org", "jboss", xs @ _*) => MergeStrategy.first
   case "about.html" => MergeStrategy.rename
   case "reference.conf" => MergeStrategy.concat
-  case _ => MergeStrategy.first
+  case _ => MergeStrategy.last
 }
