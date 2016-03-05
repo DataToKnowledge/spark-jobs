@@ -93,7 +93,7 @@ object TagArticles extends StreamUtils {
         val enriched = a.annotations.map(ann => dbpedia.enrichAnnotation(ann))
         a.copy(annotations = enriched)
       }
-      DBpedia.closePool()
+//      DBpedia.closePool()
       result
     }
 
