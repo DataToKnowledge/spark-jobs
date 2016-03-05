@@ -4,7 +4,7 @@ import akka.actor.Props
 import it.dtk.kafka.ConsumerProperties
 import it.dtk.model._
 import it.dtk.nlp.{FocusLocation, DBpediaSpotLight, DBpedia}
-import it.dtk.streaming.receivers.KafkaFeedItemsActor
+import it.dtk.streaming.receivers.avro.KafkaFeedItemsActor
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
@@ -69,7 +69,7 @@ object TagArticles extends StreamUtils {
     )
 
     val feedItemStream = ssc.actorStream[(String, Article)](
-      Props(new KafkaFeedItemsActor(consProps,true)), "read_articles"
+      Props(new KafkaFeedItemsActor(consProps, true)), "read_articles"
     )
 
     feedItemStream.print(1)
@@ -93,13 +93,14 @@ object TagArticles extends StreamUtils {
         val enriched = a.annotations.map(ann => dbpedia.enrichAnnotation(ann))
         a.copy(annotations = enriched)
       }
-//      DBpedia.closePool()
+      //      DBpedia.closePool()
       result
     }
 
     enrichedArticles.print(1)
 
     val nodes = esIPs.split(",").map(_ + ":9300").mkString(",")
+
 
     val locationArticles = enrichedArticles.mapPartitions { it =>
       val focusLoc = FocusLocation.getConnection(nodes, locDocPath, clusterName)
@@ -108,11 +109,10 @@ object TagArticles extends StreamUtils {
         val location = focusLoc.extract(a)
         a.copy(focusLocation = location)
       }
-      focusLoc.close()
       result
     }
 
-    writeToKafka(locationArticles, kafkaBrokers, "tag_articles", writeTopic)
+    writeToKafkaAvro(locationArticles, kafkaBrokers, "tag_articles", writeTopic)
 
     ssc.start()
     ssc.awaitTermination()

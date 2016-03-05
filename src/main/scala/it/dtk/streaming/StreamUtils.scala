@@ -39,12 +39,10 @@ trait StreamUtils {
 
   def writeToKafkaAvro(dStream: DStream[Article], brokers: String, clientId: String, topic: String): Unit = {
     val props = ProducerProperties(brokers, topic, clientId)
-    val articleAvroType = AvroType[Article]
 
     dStream.foreachRDD { rdd =>
-
       rdd.foreachPartition { it =>
-        implicit val formats = Serialization.formats(NoTypeHints) ++ JodaTimeSerializers.all
+        val articleAvroType = AvroType[Article]
 
         val writer = KafkaWriter.getConnection(props)
         val buf = new ByteArrayOutputStream()
@@ -71,6 +69,26 @@ trait StreamUtils {
         it.foreach { t =>
           println(s"sending to kafka tweet with id ${t.id}")
           writer.send(t.id.getBytes(), write(t).getBytes())
+        }
+      }
+    }
+  }
+
+  def writeTweetsToKafkaAvro(dStream: DStream[Tweet], brokers: String, clientId: String, topic: String): Unit = {
+    val props = ProducerProperties(brokers, topic, clientId)
+    dStream.foreachRDD { rdd =>
+
+      rdd.foreachPartition { it =>
+        val tweetAvroType = AvroType[Tweet]
+
+        val writer = KafkaWriter.getConnection(props)
+        val buf = new ByteArrayOutputStream()
+
+        it.foreach { t =>
+          println(s"sending to kafka tweet with id ${t.id}")
+          tweetAvroType.io.write(t, buf)
+          writer.send(t.id.getBytes(), buf.toByteArray)
+          buf.reset()
         }
       }
     }

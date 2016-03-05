@@ -1,0 +1,136 @@
+{
+  "name": "it.dtk.model.Article",
+  "type": "record",
+  "fields": [{
+    "name": "uri",
+    "type": "string"
+  }, {
+    "name": "title",
+    "type": "string"
+  }, {
+    "name": "description",
+    "type": "string"
+  }, {
+    "name": "categories",
+    "type": {
+      "type": "array",
+      "items": "string"
+    }
+  }, {
+    "name": "keywords",
+    "type": {
+      "type": "array",
+      "items": "string"
+    }
+  }, {
+    "name": "imageUrl",
+    "type": "string"
+  }, {
+    "name": "publisher",
+    "type": "string"
+  }, {
+    "name": "date",
+    "type": "long"
+  }, {
+    "name": "lang",
+    "type": "string"
+  }, {
+    "name": "cleanedText",
+    "type": "string"
+  }, {
+    "name": "annotations",
+    "type": {
+      "type": "array",
+      "items": [{
+        "name": "it.dtk.model.Annotation",
+        "type": "record",
+        "fields": [{
+          "name": "surfaceForm",
+          "type": "string"
+        }, {
+          "name": "dbpediaUrl",
+          "type": "string"
+        }, {
+          "name": "wikipediUrl",
+          "type": "string"
+        }, {
+          "name": "types",
+          "type": {
+            "type": "array",
+            "items": [{
+              "name": "it.dtk.model.AnnotationType",
+              "type": "record",
+              "fields": [{
+                "name": "src",
+                "type": "string"
+              }, {
+                "name": "value",
+                "type": "string"
+              }]
+            }, {
+              "name": "com.gensler.scalavro.Reference",
+              "type": "record",
+              "fields": [{
+                "name": "id",
+                "type": "long"
+              }]
+            }]
+          }
+        }, {
+          "name": "offset",
+          "type": "int"
+        }, {
+          "name": "support",
+          "type": "int"
+        }, {
+          "name": "pin",
+          "type": [{
+            "name": "it.dtk.model.Pin",
+            "type": "record",
+            "fields": [{
+              "name": "lat",
+              "type": "double"
+            }, {
+              "name": "long",
+              "type": "double"
+            }]
+          }, "com.gensler.scalavro.Reference"]
+        }, {
+          "name": "section",
+          "type": "string"
+        }]
+      }, "com.gensler.scalavro.Reference"]
+    }
+  }, {
+    "name": "focusLocation",
+    "type": [{
+      "name": "it.dtk.model.Location",
+      "type": "record",
+      "fields": [{
+        "name": "id",
+        "type": "int"
+      }, {
+        "name": "cityName",
+        "type": "string"
+      }, {
+        "name": "provinceId",
+        "type": "int"
+      }, {
+        "name": "provinceName",
+        "type": "string"
+      }, {
+        "name": "regionId",
+        "type": "int"
+      }, {
+        "name": "regionName",
+        "type": "string"
+      }, {
+        "name": "population",
+        "type": "int"
+      }, {
+        "name": "pin",
+        "type": ["it.dtk.model.Pin", "com.gensler.scalavro.Reference"]
+      }]
+    }, "com.gensler.scalavro.Reference"]
+  }]
+}

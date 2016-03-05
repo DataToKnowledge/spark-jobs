@@ -90,7 +90,7 @@ object ExtractQueryTerms extends StreamUtils {
 
     articles.print(1)
 
-    writeToKafka(articles, kafkaBrokers, "query_term_extractor", topic)
+    writeToKafkaAvro(articles, kafkaBrokers, "query_term_extractor", topic)
 
     saveQueryTerms(nodes, queryTermIndexPath, clusterName,
       toCheckQueryTerms.map(q => q.copy(timestamp = Option(DateTime.now()))))
