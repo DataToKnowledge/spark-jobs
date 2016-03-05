@@ -69,8 +69,10 @@ object TagArticles extends StreamUtils {
     )
 
     val feedItemStream = ssc.actorStream[(String, Article)](
-      Props(new KafkaFeedItemsActor(consProps)), "read_articles"
+      Props(new KafkaFeedItemsActor(consProps,true)), "read_articles"
     )
+
+    feedItemStream.print(1)
 
     val distinctArticles = feedItemStream
       .transform(rdd => rdd.distinct())
@@ -83,6 +85,8 @@ object TagArticles extends StreamUtils {
         it.map(a => annotateArticle(dbpedia, a))
       }
 
+    taggedArticles.print(1)
+
     val enrichedArticles = taggedArticles.mapPartitions { it =>
       val dbpedia = DBpedia.getConnection(dbPediaBaseUrl, lang)
       val result = it.map { a =>
@@ -92,6 +96,9 @@ object TagArticles extends StreamUtils {
       DBpedia.closePool()
       result
     }
+
+    enrichedArticles.print(1)
+
     val nodes = esIPs.split(",").map(_ + ":9300").mkString(",")
 
     val locationArticles = enrichedArticles.mapPartitions { it =>
