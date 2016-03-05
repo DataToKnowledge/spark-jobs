@@ -1,17 +1,20 @@
-package it.dtk.streaming.receivers
+package it.dtk.streaming.receivers.avro
+
+import java.io.ByteArrayInputStream
 
 import akka.actor.Actor
-import akka.actor.Actor.Receive
-import it.dtk.kafka.{KafkaReader, ConsumerProperties}
+import com.gensler.scalavro.types.AvroType
+import it.dtk.kafka.{ConsumerProperties, KafkaReader}
 import it.dtk.model.Article
 import org.apache.kafka.common.TopicPartition
 import org.apache.spark.streaming.receiver.ActorHelper
 import org.json4s.NoTypeHints
 import org.json4s.ext.JodaTimeSerializers
-import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization
+
+import scala.collection.JavaConversions._
 import scala.concurrent.duration._
-import collection.JavaConversions._
+import scala.util.{Failure, Success}
 
 /**
   * Created by fabiofumarola on 28/02/16.
@@ -20,6 +23,8 @@ class KafkaFeedItemsActor(props: ConsumerProperties, beginning: Boolean = false)
   implicit val formats = Serialization.formats(NoTypeHints) ++ JodaTimeSerializers.all
 
   import context.dispatcher
+
+  val articleAvroType = AvroType[Article]
 
   val consumer = new KafkaReader[Array[Byte], Array[Byte]](props)
 
@@ -35,8 +40,12 @@ class KafkaFeedItemsActor(props: ConsumerProperties, beginning: Boolean = false)
     case "start" =>
       consumer.poll().foreach { rec =>
         val url = new String(rec.key())
-        val article = parse(new String(rec.value())).extract[Article]
-        store(url -> article)
+        articleAvroType.io.read(new ByteArrayInputStream(rec.value)) match {
+          case Success(article) =>
+            store(url -> article)
+
+          case Failure(ex) => ex.printStackTrace()
+        }
       }
       self ! "start"
   }
