@@ -83,10 +83,13 @@ object ExtractQueryTerms extends StreamUtils {
 
     toCheckQueryTerms.print(2)
 
-    val articles = toCheckQueryTerms
+    val urls = toCheckQueryTerms
       .flatMap(q => terms.generateUrls(q.terms, q.lang, "wheretolive.it"))
       .flatMap(u => terms.getResultsAsArticles(u))
-      .map(a => gander.mainContent(a))
+
+    urls.print(2)
+
+    val articles = urls.map(a => gander.mainContent(a))
 
     articles.count().foreachRDD { rdd =>
       println(s"Got ${rdd.collect()(0)} articles to save")

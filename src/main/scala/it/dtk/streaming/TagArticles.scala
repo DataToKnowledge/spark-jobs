@@ -10,6 +10,8 @@ import org.apache.spark.SparkConf
 import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
+import scala.util.Try
+
 /**
   * Created by fabiofumarola on 28/02/16.
   */
@@ -61,6 +63,8 @@ object TagArticles extends StreamUtils {
         kafkaBrokers = "kafka-1:9092,kafka-2:9092,kafka-3:9092"
         dbPediaBaseUrl = "http://dbpedia_it"
     }
+
+    val offset = Try(args(1)).getOrElse("largest")
 
     val ssc = new StreamingContext(conf, Seconds(10))
 
