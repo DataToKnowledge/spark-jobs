@@ -23,7 +23,9 @@ class KafkaArticleActorAvro(props: Map[String, String], topic: String, beginning
   import context.dispatcher
   import org.apache.kafka.common.serialization.ByteArrayDeserializer
 
-  val consumer = new KafkaConsumer[Array[Byte], Array[Byte]](props, ByteArrayDeserializer, ByteArrayDeserializer)
+  val deserializer = new ByteArrayDeserializer
+
+  val consumer = new KafkaConsumer[Array[Byte], Array[Byte]](props, deserializer, deserializer)
   consumer.subscribe(topic.split(",").toList)
 
   if (beginning) {
