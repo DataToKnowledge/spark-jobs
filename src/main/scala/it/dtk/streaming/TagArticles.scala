@@ -163,19 +163,4 @@ object TagArticles extends StreamUtils {
     val annotations = titleAn ++ descrAn ++ textAn ++ keywordAn
     a.copy(annotations = annotations.toList)
   }
-
 }
-
-
-//    val inTopicSet = readTopic.split(",").toSet
-//    val kafkaParams = Map[String, String](
-//      "bootstrap.servers" -> kafkaBrokers,
-//      "group.id" -> "feed_items",
-//      "enable.auto.commit" -> "true",
-//      "key.deserializer" -> "org.apache.kafka.common.serialization.ByteArrayDeserializer",
-//      "value.deserializer" -> "org.apache.kafka.common.serialization.ByteArrayDeserializer"
-//    )
-//
-//    val feedItems = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](
-//      ssc, kafkaParams, inTopicSet
-//    )

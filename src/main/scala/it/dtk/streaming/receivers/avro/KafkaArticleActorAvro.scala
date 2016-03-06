@@ -22,8 +22,6 @@ class KafkaArticleActorAvro(props: Map[String, String], topic: String, beginning
 
   import context.dispatcher
 
-  //  val articleAvroType = AvroType[Article]
-
   val consumer = new KafkaConsumer[Array[Byte], Array[Byte]](props)
   consumer.subscribe(topic.split(",").toList)
 
@@ -42,25 +40,9 @@ class KafkaArticleActorAvro(props: Map[String, String], topic: String, beginning
   override def receive: Receive = {
 
     case "start" =>
-      println("start polling")
       consumer.poll(100).foreach { rec =>
-        println("got a record")
-
         store((rec.key(), rec.value()))
       }
-
-    //        val url = new String(rec.key())
-    //        articleAvroType.io.read(new ByteArrayInputStream(rec.value)) match {
-    //          case Success(article) =>
-    //            log.info("parsed the record")
-    //            store(url -> article)
-    //
-    //          case Failure(ex) =>
-    //            ex.printStackTrace()
-    //            self ! PoisonPill
-    //        }
-    //      }
-    //    //      self ! "start"
   }
 
   override def postStop(): Unit = {
