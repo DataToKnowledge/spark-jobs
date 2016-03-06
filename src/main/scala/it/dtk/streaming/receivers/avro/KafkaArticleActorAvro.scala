@@ -21,8 +21,9 @@ import scala.util.{Failure, Success}
 class KafkaArticleActorAvro(props: Map[String, String], topic: String, beginning: Boolean = false) extends Actor with ActorHelper {
 
   import context.dispatcher
+  import org.apache.kafka.common.serialization.ByteArrayDeserializer
 
-  val consumer = new KafkaConsumer[Array[Byte], Array[Byte]](props)
+  val consumer = new KafkaConsumer[Array[Byte], Array[Byte]](props, ByteArrayDeserializer, ByteArrayDeserializer)
   consumer.subscribe(topic.split(",").toList)
 
   if (beginning) {
