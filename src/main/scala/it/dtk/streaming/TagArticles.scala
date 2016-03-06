@@ -1,6 +1,7 @@
 package it.dtk.streaming
 
 import java.io.ByteArrayInputStream
+import java.util.UUID
 
 import akka.actor.Props
 import com.gensler.scalavro.types.AvroType
@@ -9,8 +10,9 @@ import it.dtk.model._
 import it.dtk.nlp.{FocusLocation, DBpediaSpotLight, DBpedia}
 import it.dtk.streaming.receivers.avro.KafkaArticleActorAvro
 import kafka.serializer.DefaultDecoder
+import kafka.utils.ZkUtils
 import org.apache.spark.SparkConf
-import org.apache.spark.streaming.kafka.KafkaUtils
+import org.apache.spark.streaming.kafka.{OffsetRange, KafkaUtils}
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
 /**
@@ -77,7 +79,11 @@ object TagArticles extends StreamUtils {
     )
 
     val topicsSet = readTopic.split(",").toSet
-    val kafkaParams = Map[String, String]("metadata.broker.list" -> kafkaBrokers, " auto.offset.reset" -> "smallest")
+    val kafkaParams = Map[String, String](
+      "metadata.broker.list" -> kafkaBrokers,
+      " auto.offset.reset" -> "smallest",
+      "group.id" -> UUID.randomUUID().toString)
+
     val inputStream = KafkaUtils.createDirectStream[Array[Byte], Array[Byte], DefaultDecoder, DefaultDecoder](
       ssc, kafkaParams, topicsSet
     )
@@ -86,8 +92,8 @@ object TagArticles extends StreamUtils {
       val articleAvroType = AvroType[Article]
       it.map { e =>
         val url = new String(e._1)
-        val artile = articleAvroType.io.read(new ByteArrayInputStream(e._2)).toOption
-        url -> artile
+        val article = articleAvroType.io.read(new ByteArrayInputStream(e._2)).toOption
+        url -> article
       }
     }.filter(_._2.isDefined)
       .map(e => e._1 -> e._2.get)
