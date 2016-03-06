@@ -2,7 +2,6 @@ package it.dtk.jobs.tests
 
 import org.apache.spark.SparkConf
 import org.apache.spark.storage.StorageLevel
-import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
 /**
@@ -23,15 +22,15 @@ object StreamingKafkaTest {
     val ssc = new StreamingContext(sparkConf, Seconds(1))
     ssc.checkpoint("checkpoint")
 
-    val topicMap = topics.split(",").map((_, 1)).toMap
-    val kafkaParams = Map[String, String]("metadata.broker.list" -> brokers, " auto.offset.reset" -> "smallest")
-    val articles = KafkaUtils.createStream(
-      ssc, zk, "test",topicMap, StorageLevel.MEMORY_ONLY)
-
-    articles.foreachRDD { rdd =>
-      val array = rdd.collect()
-      println(array.length)
-    }
+//    val topicMap = topics.split(",").map((_, 1)).toMap
+//    val kafkaParams = Map[String, String]("metadata.broker.list" -> brokers, " auto.offset.reset" -> "smallest")
+//    val articles = KafkaUtils.createStream(
+//      ssc, zk, "test",topicMap, StorageLevel.MEMORY_ONLY)
+//
+//    articles.foreachRDD { rdd =>
+//      val array = rdd.collect()
+//      println(array.length)
+//    }
 
     ssc.start()
     ssc.awaitTermination()

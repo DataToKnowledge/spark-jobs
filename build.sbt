@@ -18,7 +18,7 @@ lazy val root = (project in file("."))
       "org.apache.spark" %% "spark-core" % "1.6.0" % "provided",
       "org.apache.spark" %% "spark-sql" % "1.6.0" % "provided",
       "org.apache.spark" %% "spark-streaming" % "1.6.0",
-//      "org.apache.spark" %% "spark-streaming-kafka" % "1.6.0",
+//      "org.apache.spark" %% "spark-streaming-kafka" % "1.6.0" % "provided",
       "org.apache.spark" %% "spark-streaming-twitter" % "1.6.0",
       "org.elasticsearch" %% "elasticsearch-spark" % "2.2.0",
       "com.gensler" %% "scalavro" % "0.6.2"
@@ -51,7 +51,7 @@ assemblyMergeStrategy in assembly := {
   case PathList("org", "jboss", xs@_*) => MergeStrategy.first
   case "about.html" => MergeStrategy.rename
   case "reference.conf" => MergeStrategy.concat
-  case _ => MergeStrategy.first
+  case _ => MergeStrategy.last
 }
 
 

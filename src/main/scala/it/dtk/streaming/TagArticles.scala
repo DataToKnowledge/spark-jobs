@@ -1,15 +1,12 @@
 package it.dtk.streaming
 
 import java.io.ByteArrayInputStream
-import java.util.UUID
 
 import akka.actor.Props
 import com.gensler.scalavro.types.AvroType
-import it.dtk.kafka.ConsumerProperties
 import it.dtk.model._
 import it.dtk.nlp.{DBpedia, DBpediaSpotLight, FocusLocation}
 import it.dtk.streaming.receivers.avro.KafkaArticleActorAvro
-import kafka.producer.ProducerConfig
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
