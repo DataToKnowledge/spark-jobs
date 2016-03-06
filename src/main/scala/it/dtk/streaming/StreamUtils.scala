@@ -1,8 +1,5 @@
 package it.dtk.streaming
 
-import java.io.ByteArrayOutputStream
-
-import com.gensler.scalavro.types.AvroType
 import it.dtk.kafka.{KafkaWriter, ProducerProperties}
 import it.dtk.model.{Article, Feed, Tweet, _}
 import org.apache.spark.streaming.StreamingContext
@@ -13,6 +10,8 @@ import org.json4s.ext.JodaTimeSerializers
 import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization
 import org.json4s.jackson.Serialization._
+import java.io.ByteArrayOutputStream
+import com.gensler.scalavro.types.AvroType
 
 
 /**
@@ -40,21 +39,21 @@ trait StreamUtils {
   def writeToKafkaAvro(dStream: DStream[Article], brokers: String, clientId: String, topic: String): Unit = {
     val props = ProducerProperties(brokers, topic, clientId)
 
-    dStream.foreachRDD { rdd =>
-      rdd.foreachPartition { it =>
-        val articleAvroType = AvroType[Article]
+       dStream.foreachRDD { rdd =>
+         rdd.foreachPartition { it =>
+           val articleAvroType = AvroType[Article]
 
-        val writer = KafkaWriter.getConnection(props)
-        val buf = new ByteArrayOutputStream()
+           val writer = KafkaWriter.getConnection(props)
+           val buf = new ByteArrayOutputStream()
 
-        it.foreach { a =>
-          println(s"sending to kafka news with uri ${a.uri}")
-          articleAvroType.io.write(a, buf)
-          writer.send(a.uri.getBytes(), buf.toByteArray)
-          buf.reset()
-        }
-      }
-    }
+           it.foreach { a =>
+             println(s"sending to kafka news with uri ${a.uri}")
+             articleAvroType.io.write(a, buf)
+             writer.send(a.uri.getBytes(), buf.toByteArray)
+             buf.reset()
+           }
+         }
+       }
   }
 
   def writeTweetsToKafka(dStream: DStream[Tweet], brokers: String, clientId: String, topic: String): Unit = {
@@ -76,22 +75,22 @@ trait StreamUtils {
 
   def writeTweetsToKafkaAvro(dStream: DStream[Tweet], brokers: String, clientId: String, topic: String): Unit = {
     val props = ProducerProperties(brokers, topic, clientId)
-    dStream.foreachRDD { rdd =>
+       dStream.foreachRDD { rdd =>
 
-      rdd.foreachPartition { it =>
-        val tweetAvroType = AvroType[Tweet]
+         rdd.foreachPartition { it =>
+           val tweetAvroType = AvroType[Tweet]
 
-        val writer = KafkaWriter.getConnection(props)
-        val buf = new ByteArrayOutputStream()
+           val writer = KafkaWriter.getConnection(props)
+           val buf = new ByteArrayOutputStream()
 
-        it.foreach { t =>
-          println(s"sending to kafka tweet with id ${t.id}")
-          tweetAvroType.io.write(t, buf)
-          writer.send(t.id.getBytes(), buf.toByteArray)
-          buf.reset()
-        }
-      }
-    }
+           it.foreach { t =>
+             println(s"sending to kafka tweet with id ${t.id}")
+             tweetAvroType.io.write(t, buf)
+             writer.send(t.id.getBytes(), buf.toByteArray)
+             buf.reset()
+           }
+         }
+       }
   }
 
   /**
