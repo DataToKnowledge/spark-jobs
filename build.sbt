@@ -41,12 +41,6 @@ lazy val gander = (project in file("./gander"))
   .settings(name := "gander")
 
 
-
-//assemblyShadeRules in assembly := Seq(
-//  ShadeRule.rename("org.apache.kafka.**" -> "shadeio.@1").inAll
-//)
-
-
 assemblyOption in assembly :=
   (assemblyOption in assembly).value.copy(includeScala = false)
 
@@ -106,7 +100,7 @@ assemblyMergeStrategy in assembly := {
   // case PathList("org","dom4j", xs@_*) => MergeStrategy.last
   // case PathList("org","xerial", xs@_*) => MergeStrategy.last
   // case PathList("org","apache", "kafka", "clients", xs@_*) => MergeStrategy.first
-  case PathList("org","apache", "spark", xs@_*) => MergeStrategy.discard
+  case PathList("org","apache", "spark", xs@_*) => MergeStrategy.last
   case e =>
 //    println("====== START")
 //    println(e)
