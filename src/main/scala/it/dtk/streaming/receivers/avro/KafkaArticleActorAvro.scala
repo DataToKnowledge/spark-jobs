@@ -27,13 +27,13 @@ class KafkaArticleActorAvro(props: Map[String, String], topic: String, beginning
   val deserializer = new ByteArrayDeserializer
 
   val consumer = new KafkaConsumer[Array[Byte], Array[Byte]](props)
-  consumer.subscribe(topic.split(",").toList)
+  //  consumer.subscribe(topic.split(",").toList)
 
   if (beginning) {
     consumer.poll(100)
     try {
-      consumer.seekToBeginning(new TopicPartition(topic, 0))
-      consumer.seekToBeginning(new TopicPartition(topic, 1))
+      //      consumer.seekToBeginning(new TopicPartition(topic, 0))
+      //      consumer.seekToBeginning(new TopicPartition(topic, 1))
     } catch {
       case e: Exception =>
         e.printStackTrace()
@@ -45,7 +45,7 @@ class KafkaArticleActorAvro(props: Map[String, String], topic: String, beginning
 
     case "start" =>
       consumer.poll(100).foreach { rec =>
-        store((rec.key(), rec.value()))
+        //        store((rec.key(), rec.value()))
       }
   }
 
