@@ -2,12 +2,12 @@ package it.dtk.streaming
 
 import java.io.ByteArrayInputStream
 
-import akka.actor.Props
 import com.gensler.scalavro.types.AvroType
 import it.dtk.model._
 import it.dtk.nlp.{DBpedia, DBpediaSpotLight, FocusLocation}
-import it.dtk.streaming.receivers.avro.KafkaArticleActorAvro
+import kafka.serializer.DefaultDecoder
 import org.apache.spark.SparkConf
+import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
 /**
@@ -63,18 +63,13 @@ object TagArticles extends StreamUtils {
     }
 
     val ssc = new StreamingContext(conf, Seconds(10))
-    ssc.checkpoint("/tmp")
 
-    val consProps = Map(
+    val kafkaParams = Map[String, String](
       "bootstrap.servers" -> kafkaBrokers,
-      "group.id" -> "feed_reader",
-      "value.deserializer" -> "org.apache.kafka.common.serialization.ByteArrayDeserializer",
-      "key.deserializer" -> "org.apache.kafka.common.serialization.ByteArrayDeserializer",
-      "partition.assignment.strategy" -> "roundrobin"
-    )
+      "auto.offset.reset" -> "smallest")
 
-    val inputStream = ssc.actorStream[(Array[Byte], Array[Byte])](
-      Props(new KafkaArticleActorAvro(consProps, readTopic, true)), "read_articles"
+    val inputStream = KafkaUtils.createDirectStream[Array[Byte], Array[Byte], DefaultDecoder, DefaultDecoder](
+      ssc, kafkaParams, readTopic.split(",").toSet
     )
 
     inputStream.count().foreachRDD { rdd =>
@@ -86,7 +81,6 @@ object TagArticles extends StreamUtils {
       it.map { kv =>
         val url = new String(kv._1)
         val article = articleAvroType.io.read(new ByteArrayInputStream(kv._2)).toOption
-
         url -> article
       }
     }.filter(_._2.isDefined)

@@ -35,7 +35,6 @@ trait StreamUtils {
     val props = kafkaProducerProps(brokers, clientId)
 
     dStream.foreachRDD { rdd =>
-
       rdd.foreachPartition { it =>
         implicit val formats = Serialization.formats(NoTypeHints) ++ JodaTimeSerializers.all
         val producer = new KafkaProducer[Array[Byte], Array[Byte]](props)

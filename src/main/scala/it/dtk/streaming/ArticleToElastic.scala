@@ -1,10 +1,15 @@
 package it.dtk.streaming
 
+import java.io.ByteArrayInputStream
+
 import akka.actor.Props
+import com.gensler.scalavro.types.AvroType
 import it.dtk.kafka.ConsumerProperties
 import it.dtk.model.Article
 import it.dtk.streaming.receivers.avro.KafkaArticleActorAvro
+import kafka.serializer.DefaultDecoder
 import org.apache.spark.SparkConf
+import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
 /**
@@ -57,20 +62,33 @@ object ArticleToElastic extends StreamUtils {
 
     val ssc = new StreamingContext(conf, Seconds(10))
 
+    val kafkaParams = Map[String, String](
+      "bootstrap.servers" -> kafkaBrokers,
+      "auto.offset.reset" -> "smallest")
 
-    val consProps = ConsumerProperties(
-      brokers = kafkaBrokers,
-      topics = topic,
-      groupName = "write_articles"
+    val inputStream = KafkaUtils.createDirectStream[Array[Byte], Array[Byte], DefaultDecoder, DefaultDecoder](
+      ssc, kafkaParams, topic.split(",").toSet
     )
 
-//    val articleStream = ssc.actorStream[(String, Article)](
-//      Props(new KafkaArticleActorAvro(consProps,true)), "write_articles"
-//    ).map(_._2)
-//
-//    articleStream.print(1)
-//
-//    saveArticleToElastic(indexPath,articleStream)
+    inputStream.count().foreachRDD { rdd =>
+      println(s"Got ${rdd.collect()(0)} articles to index")
+    }
+
+    val articleStream = inputStream.mapPartitions { it =>
+      val articleAvroType = AvroType[Article]
+      it.map { kv =>
+        val url = new String(kv._1)
+        val article = articleAvroType.io.read(new ByteArrayInputStream(kv._2)).toOption
+        url -> article
+      }
+    }.filter(_._2.isDefined)
+      .map(kv => kv._2.get)
+
+    inputStream.count().foreachRDD { rdd =>
+      println(s"Indexing ${rdd.collect()(0)} articles")
+    }
+
+    saveArticleToElastic(indexPath, articleStream)
 
 
     ssc.start()
