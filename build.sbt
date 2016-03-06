@@ -108,9 +108,9 @@ assemblyMergeStrategy in assembly := {
   // case PathList("org","apache", "kafka", "clients", xs@_*) => MergeStrategy.first
   case PathList("org","apache", "spark", xs@_*) => MergeStrategy.discard
   case e =>
-    println("====== START")
-    println(e)
-    println("====== END")
-    // System.exit(1)
+//    println("====== START")
+//    println(e)
+//    println("====== END")
+//    // System.exit(1)
     MergeStrategy.last
 }
