@@ -73,6 +73,10 @@ object TagArticles extends StreamUtils {
       Props(new KafkaFeedItemsActorAvro(consProps, true)), "read_articles"
     )
 
+    feedItemStream.count().foreachRDD { rdd =>
+      println(s"Got ${rdd.collect()(0)} articles to tag from kafka")
+    }
+
     feedItemStream.print(1)
 
     val distinctArticles = feedItemStream

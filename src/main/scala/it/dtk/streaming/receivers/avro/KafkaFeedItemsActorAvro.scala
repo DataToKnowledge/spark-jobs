@@ -20,7 +20,6 @@ import scala.util.{Failure, Success}
   * Created by fabiofumarola on 28/02/16.
   */
 class KafkaFeedItemsActorAvro(props: ConsumerProperties, beginning: Boolean = false) extends Actor with ActorHelper {
-  implicit val formats = Serialization.formats(NoTypeHints) ++ JodaTimeSerializers.all
 
   import context.dispatcher
 
@@ -33,21 +32,24 @@ class KafkaFeedItemsActorAvro(props: ConsumerProperties, beginning: Boolean = fa
     consumer.consumer.seekToBeginning(new TopicPartition(props.topics, 0))
   }
 
-  context.system.scheduler.scheduleOnce(50 millis, self, "start")
+  context.system.scheduler.schedule(0 millis, 100 millis, self, "start")
 
   override def receive: Receive = {
 
     case "start" =>
+      val s: ActorHelper = self.asInstanceOf[ActorHelper]
+
       consumer.poll().foreach { rec =>
         val url = new String(rec.key())
         articleAvroType.io.read(new ByteArrayInputStream(rec.value)) match {
           case Success(article) =>
-            store(url -> article)
+            log.info("got article from actor")
+            s.store(url -> article)
 
           case Failure(ex) => ex.printStackTrace()
         }
       }
-      self ! "start"
+//      self ! "start"
   }
 
   override def postStop(): Unit = {
