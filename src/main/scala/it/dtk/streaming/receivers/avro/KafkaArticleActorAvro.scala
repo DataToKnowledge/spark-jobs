@@ -6,30 +6,32 @@ import akka.actor.Actor
 import com.gensler.scalavro.types.AvroType
 import it.dtk.kafka.{ConsumerProperties, KafkaReader}
 import it.dtk.model.Article
+import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.TopicPartition
+import org.apache.kafka.common.serialization.ByteArrayDeserializer
 import org.apache.spark.streaming.receiver.ActorHelper
 
 import scala.collection.JavaConversions._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
-import org.apache.kafka.common.serialization.ByteArrayDeserializer
 
 /**
   * Created by fabiofumarola on 28/02/16.
   */
-class KafkaArticleActorAvro(props: ConsumerProperties, beginning: Boolean = false) extends Actor with ActorHelper {
+class KafkaArticleActorAvro(props: Map[String, String], topic: String, beginning: Boolean = false) extends Actor with ActorHelper {
 
   import context.dispatcher
 
   val articleAvroType = AvroType[Article]
 
-  val consumer = new KafkaReader(props)
+  val consumer = new KafkaConsumer[Array[Byte], Array[Byte]](props)
+  consumer.subscribe(topic.split(",").toList)
 
   if (beginning) {
-    consumer.poll()
+    consumer.poll(100)
     try {
-      consumer.consumer.seekToBeginning(new TopicPartition(props.topics, 0))
-      consumer.consumer.seekToBeginning(new TopicPartition(props.topics, 1))
+      consumer.seekToBeginning(new TopicPartition(topic, 0))
+      consumer.seekToBeginning(new TopicPartition(topic, 1))
     } catch {
       case e: Exception =>
         e.printStackTrace()
@@ -40,12 +42,13 @@ class KafkaArticleActorAvro(props: ConsumerProperties, beginning: Boolean = fals
   override def receive: Receive = {
 
     case "start" =>
-
-      consumer.poll().foreach { rec =>
+      println("start polling")
+      consumer.poll(100).foreach { rec =>
+        println("got a record")
         val url = new String(rec.key())
         articleAvroType.io.read(new ByteArrayInputStream(rec.value)) match {
           case Success(article) =>
-            log.info("got article from actor")
+            log.info("parsed the record")
             store(url -> article)
 
           case Failure(ex) => ex.printStackTrace()

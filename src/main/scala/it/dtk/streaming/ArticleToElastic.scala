@@ -64,13 +64,13 @@ object ArticleToElastic extends StreamUtils {
       groupName = "write_articles"
     )
 
-    val articleStream = ssc.actorStream[(String, Article)](
-      Props(new KafkaArticleActorAvro(consProps,true)), "write_articles"
-    ).map(_._2)
-
-    articleStream.print(1)
-
-    saveArticleToElastic(indexPath,articleStream)
+//    val articleStream = ssc.actorStream[(String, Article)](
+//      Props(new KafkaArticleActorAvro(consProps,true)), "write_articles"
+//    ).map(_._2)
+//
+//    articleStream.print(1)
+//
+//    saveArticleToElastic(indexPath,articleStream)
 
 
     ssc.start()
