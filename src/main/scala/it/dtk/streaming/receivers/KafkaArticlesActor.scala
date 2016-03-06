@@ -25,12 +25,7 @@ class KafkaArticlesActor(props: ConsumerProperties, beginning: Boolean = false) 
 
   if (beginning) {
     consumer.poll()
-    try {
-      consumer.consumer.seekToBeginning(new TopicPartition(props.topics, 0))
-      consumer.consumer.seekToBeginning(new TopicPartition(props.topics, 1))
-    } catch {
-      case e: Exception =>
-    }
+    consumer.consumer.seekToBeginning(new TopicPartition(props.topics, 0))
   }
 
   context.system.scheduler.scheduleOnce(50 millis, self, "start")
