@@ -12,6 +12,7 @@ import org.apache.spark.streaming.receiver.ActorHelper
 import scala.collection.JavaConversions._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
+import org.apache.kafka.common.serialization.ByteArrayDeserializer
 
 /**
   * Created by fabiofumarola on 28/02/16.
@@ -22,7 +23,7 @@ class KafkaArticleActorAvro(props: ConsumerProperties, beginning: Boolean = fals
 
   val articleAvroType = AvroType[Article]
 
-  val consumer = new KafkaReader[Array[Byte], Array[Byte]](props)
+  val consumer = new KafkaReader(props)
 
   if (beginning) {
     consumer.poll()

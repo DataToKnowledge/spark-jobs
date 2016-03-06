@@ -95,6 +95,7 @@ This is useful if you want to try the job
   --master spark://spark-master-0:7077 \
   --executor-memory 1G \
   --total-executor-cores 2 \
+  --jars ./kafka-clients-0.9.0.1.jar \
   ./spark-jobs-assembly-0.1.0.jar \
   prod
 

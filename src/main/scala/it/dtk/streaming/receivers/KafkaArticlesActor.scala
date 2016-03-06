@@ -21,7 +21,7 @@ class KafkaArticlesActor(props: ConsumerProperties, beginning: Boolean = false) 
 
   import context.dispatcher
 
-  val consumer = new KafkaReader[Array[Byte], Array[Byte]](props)
+  val consumer = new KafkaReader(props)
 
   if (beginning) {
     consumer.poll()
