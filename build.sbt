@@ -103,7 +103,7 @@ assemblyMergeStrategy in assembly := {
   case PathList("spray","json", xs@_*) => MergeStrategy.last
   case PathList("org","dom4j", xs@_*) => MergeStrategy.last
   case PathList("org","xerial", xs@_*) => MergeStrategy.last
-  case PathList("org","apache", "kafka", xs@_*) => MergeStrategy.last
+  case PathList("org","apache", "kafka", "clients", xs@_*) => MergeStrategy.first
   case e =>
     // println("====== START")
     // println(e)
