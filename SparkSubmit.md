@@ -14,7 +14,7 @@ This is useful if you want to try the job
 ./bin/spark-submit \
   --class it.dtk.streaming.ExtractQueryTerms \
   --master spark://spark-master-0:7077 \
-  --executor-memory 1G \
+  --executor-memory 512M \
   --total-executor-cores 2 \
   ./spark-jobs-assembly-0.1.0.jar \
   prod
@@ -93,9 +93,8 @@ This is useful if you want to try the job
 ./bin/spark-submit \
   --class it.dtk.streaming.TagArticles \
   --master spark://spark-master-0:7077 \
-  --executor-memory 1G \
+  --executor-memory 512M \
   --total-executor-cores 2 \
-  --jars ./kafka-clients-0.9.0.1.jar \
   ./spark-jobs-assembly-0.1.0.jar \
   prod
 

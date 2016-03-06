@@ -57,7 +57,7 @@ object ExtractQueryTerms extends StreamUtils {
         conf.setMaster("local[*]")
 
       case "prod" =>
-        esIPs = "es-data-1,es-data-2,es-data-3"
+        esIPs = "es-data-2,es-data-3,es-data-4"
         kafkaBrokers = "kafka-1:9092,kafka-2:9092,kafka-3:9092"
     }
 
@@ -88,7 +88,9 @@ object ExtractQueryTerms extends StreamUtils {
       .flatMap(u => terms.getResultsAsArticles(u))
       .map(a => gander.mainContent(a))
 
-    articles.print(1)
+    articles.count().foreachRDD { rdd =>
+      println(s"Got ${rdd.collect()(0)} articles to save")
+    }
 
     writeToKafkaAvro(articles, kafkaBrokers, "query_term_extractor", topic)
 

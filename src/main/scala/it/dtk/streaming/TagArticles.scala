@@ -57,7 +57,7 @@ object TagArticles extends StreamUtils {
         conf.setMaster("local[*]")
 
       case "prod" =>
-        esIPs = "es-data-1,es-data-2,es-data-3"
+        esIPs = "es-data-2,es-data-3,es-data-4"
         kafkaBrokers = "kafka-1:9092,kafka-2:9092,kafka-3:9092"
         dbPediaBaseUrl = "http://dbpedia_it"
     }
@@ -86,7 +86,6 @@ object TagArticles extends StreamUtils {
     }.filter(_._2.isDefined)
       .map(kv => kv._1 -> kv._2.get)
 
-    feedItemStream.print(1)
 
     val distinctArticles = feedItemStream
       .transform(rdd => rdd.distinct())
@@ -99,7 +98,9 @@ object TagArticles extends StreamUtils {
         it.map(a => annotateArticle(dbpedia, a))
       }
 
-    taggedArticles.print(1)
+    taggedArticles.count().foreachRDD { rdd =>
+      println(s"Got ${rdd.collect()(0)} tagged articles")
+    }
 
     val enrichedArticles = taggedArticles.mapPartitions { it =>
       val dbpedia = DBpedia.getConnection(dbPediaBaseUrl, lang)
@@ -111,7 +112,9 @@ object TagArticles extends StreamUtils {
       result
     }
 
-    enrichedArticles.print(1)
+    enrichedArticles.count().foreachRDD { rdd =>
+      println(s"Got ${rdd.collect()(0)} geo located articles")
+    }
 
     val nodes = esIPs.split(",").map(_ + ":9300").mkString(",")
 
