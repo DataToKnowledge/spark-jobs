@@ -4,7 +4,7 @@ import akka.actor.Props
 import it.dtk.kafka.ConsumerProperties
 import it.dtk.model._
 import it.dtk.nlp.{FocusLocation, DBpediaSpotLight, DBpedia}
-import it.dtk.streaming.receivers.avro.KafkaFeedItemsActor
+import it.dtk.streaming.receivers.avro.KafkaFeedItemsActorAvro
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
@@ -61,6 +61,7 @@ object TagArticles extends StreamUtils {
     }
 
     val ssc = new StreamingContext(conf, Seconds(10))
+    ssc.checkpoint("/tmp")
 
     val consProps = ConsumerProperties(
       brokers = kafkaBrokers,
@@ -69,7 +70,7 @@ object TagArticles extends StreamUtils {
     )
 
     val feedItemStream = ssc.actorStream[(String, Article)](
-      Props(new KafkaFeedItemsActor(consProps, true)), "read_articles"
+      Props(new KafkaFeedItemsActorAvro(consProps, true)), "read_articles"
     )
 
     feedItemStream.print(1)

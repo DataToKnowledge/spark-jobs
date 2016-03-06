@@ -19,7 +19,7 @@ import scala.util.{Failure, Success}
 /**
   * Created by fabiofumarola on 28/02/16.
   */
-class KafkaFeedItemsActor(props: ConsumerProperties, beginning: Boolean = false) extends Actor with ActorHelper {
+class KafkaArticlesActorAvro(props: ConsumerProperties, beginning: Boolean = false) extends Actor with ActorHelper {
   implicit val formats = Serialization.formats(NoTypeHints) ++ JodaTimeSerializers.all
 
   import context.dispatcher
@@ -30,7 +30,12 @@ class KafkaFeedItemsActor(props: ConsumerProperties, beginning: Boolean = false)
 
   if (beginning) {
     consumer.poll()
-    consumer.consumer.seekToBeginning(new TopicPartition(props.topics, 0))
+    try {
+      consumer.consumer.seekToBeginning(new TopicPartition(props.topics, 0))
+      consumer.consumer.seekToBeginning(new TopicPartition(props.topics, 1))
+    } catch {
+      case e: Exception =>
+    }
   }
 
   context.system.scheduler.scheduleOnce(50 millis, self, "start")

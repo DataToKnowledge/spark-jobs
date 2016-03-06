@@ -3,7 +3,8 @@ package it.dtk.streaming
 import akka.actor.Props
 import it.dtk.kafka.ConsumerProperties
 import it.dtk.model.Article
-import it.dtk.streaming.receivers.{KafkaArticlesActor, KafkaFeedItemsActor}
+import it.dtk.streaming.receivers.KafkaFeedItemsActor
+import it.dtk.streaming.receivers.avro.KafkaArticlesActorAvro
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
@@ -65,7 +66,7 @@ object ArticleToElastic extends StreamUtils {
     )
 
     val articleStream = ssc.actorStream[(String, Article)](
-      Props(new KafkaArticlesActor(consProps,true)), "write_articles"
+      Props(new KafkaArticlesActorAvro(consProps,true)), "write_articles"
     ).map(_._2)
 
     articleStream.print()

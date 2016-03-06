@@ -18,7 +18,7 @@ This is useful if you want to try the job
   --total-executor-cores 2 \
   ./spark-jobs-assembly-0.1.0.jar \
   prod
-  
+
 ```
 
 Moreover you can use local[2] as master to run all the workers locally
@@ -38,7 +38,7 @@ Moreover you can use local[2] as master to run all the workers locally
   --total-executor-cores 2 \
   ./spark-jobs-assembly-0.1.0.jar \
   prod
-  
+
 ```
 
 ## Run ExtractFeeds
@@ -57,7 +57,7 @@ This is useful if you want to try the job
   --total-executor-cores 2 \
   ./spark-jobs-assembly-0.1.0.jar \
   prod
-  
+
 ```
 
 Moreover you can use local[2] as master to run all the workers locally
@@ -77,7 +77,7 @@ Moreover you can use local[2] as master to run all the workers locally
   --total-executor-cores 2 \
   ./spark-jobs-assembly-0.1.0.jar \
   prod
-  
+
 ```
 
 
@@ -94,10 +94,10 @@ This is useful if you want to try the job
   --class it.dtk.streaming.TagArticles \
   --master spark://spark-master-0:7077 \
   --executor-memory 1G \
-  --total-executor-cores 2 \
+  --total-executor-cores 3 \
   ./spark-jobs-assembly-0.1.0.jar \
   prod
-  
+
 ```
 
 Moreover you can use local[2] as master to run all the workers locally
@@ -112,7 +112,7 @@ Moreover you can use local[2] as master to run all the workers locally
   --total-executor-cores 2 \
   ./spark-jobs-assembly-0.1.0.jar \
   prod
-  
+
 ```
 
 ### Cluster Mode
@@ -122,14 +122,12 @@ Moreover you can use local[2] as master to run all the workers locally
 # Run on a Spark standalone cluster in cluster deploy mode with supervise
 ./bin/spark-submit \
   --class it.dtk.streaming.TagArticles \
-  --master spark://spark-master-0:7077  \
+  --master spark://spark-master-0:6066  \
   --deploy-mode cluster \
   --supervise \
   --executor-memory 1G \
   --total-executor-cores 2 \
   ./spark-jobs-assembly-0.1.0.jar \
   prod
-  
+
 ```
-
-
