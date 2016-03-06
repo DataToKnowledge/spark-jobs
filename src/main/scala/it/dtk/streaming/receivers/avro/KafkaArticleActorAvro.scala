@@ -22,7 +22,7 @@ class KafkaArticleActorAvro(props: Map[String, String], topic: String, beginning
 
   import context.dispatcher
 
-  val articleAvroType = AvroType[Article]
+  //  val articleAvroType = AvroType[Article]
 
   val consumer = new KafkaConsumer[Array[Byte], Array[Byte]](props)
   consumer.subscribe(topic.split(",").toList)
@@ -45,17 +45,22 @@ class KafkaArticleActorAvro(props: Map[String, String], topic: String, beginning
       println("start polling")
       consumer.poll(100).foreach { rec =>
         println("got a record")
-        val url = new String(rec.key())
-        articleAvroType.io.read(new ByteArrayInputStream(rec.value)) match {
-          case Success(article) =>
-            log.info("parsed the record")
-            store(url -> article)
 
-          case Failure(ex) => ex.printStackTrace()
-            self ! PoisonPill
-        }
+        store((rec.key(), rec.value()))
       }
-    //      self ! "start"
+
+    //        val url = new String(rec.key())
+    //        articleAvroType.io.read(new ByteArrayInputStream(rec.value)) match {
+    //          case Success(article) =>
+    //            log.info("parsed the record")
+    //            store(url -> article)
+    //
+    //          case Failure(ex) =>
+    //            ex.printStackTrace()
+    //            self ! PoisonPill
+    //        }
+    //      }
+    //    //      self ! "start"
   }
 
   override def postStop(): Unit = {

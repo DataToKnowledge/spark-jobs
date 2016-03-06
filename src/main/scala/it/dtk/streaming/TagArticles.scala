@@ -1,8 +1,10 @@
 package it.dtk.streaming
 
+import java.io.ByteArrayInputStream
 import java.util.UUID
 
 import akka.actor.Props
+import com.gensler.scalavro.types.AvroType
 import it.dtk.kafka.ConsumerProperties
 import it.dtk.model._
 import it.dtk.nlp.{DBpedia, DBpediaSpotLight, FocusLocation}
@@ -70,13 +72,24 @@ object TagArticles extends StreamUtils {
       "group.id" -> "feed_reader"
     )
 
-    val feedItemStream = ssc.actorStream[(String, Article)](
+    val inputStream = ssc.actorStream[(Array[Byte], Array[Byte])](
       Props(new KafkaArticleActorAvro(consProps, readTopic, true)), "read_articles"
     )
 
-    feedItemStream.count().foreachRDD { rdd =>
+    inputStream.count().foreachRDD { rdd =>
       println(s"Got ${rdd.collect()(0)} articles to tag from kafka")
     }
+
+    val feedItemStream = inputStream.mapPartitions { it =>
+      val articleAvroType = AvroType[Article]
+      it.map { kv =>
+        val url = new String(kv._1)
+        val article = articleAvroType.io.read(new ByteArrayInputStream(kv._2)).toOption
+
+        url -> article
+      }
+    }.filter(_._2.isDefined)
+      .map(kv => kv._1 -> kv._2.get)
 
     feedItemStream.print(1)
 
