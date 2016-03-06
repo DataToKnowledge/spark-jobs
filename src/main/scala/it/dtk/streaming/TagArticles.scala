@@ -9,6 +9,7 @@ import it.dtk.kafka.ConsumerProperties
 import it.dtk.model._
 import it.dtk.nlp.{DBpedia, DBpediaSpotLight, FocusLocation}
 import it.dtk.streaming.receivers.avro.KafkaArticleActorAvro
+import kafka.producer.ProducerConfig
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
@@ -69,7 +70,9 @@ object TagArticles extends StreamUtils {
 
     val consProps = Map(
       "bootstrap.servers" -> kafkaBrokers,
-      "group.id" -> "feed_reader"
+      "group.id" -> "feed_reader",
+      "value.deserializer" -> "org.apache.kafka.common.serialization.ByteArraySerializer",
+      "key.deserializer" -> "org.apache.kafka.common.serialization.ByteArraySerializer"
     )
 
     val inputStream = ssc.actorStream[(Array[Byte], Array[Byte])](
