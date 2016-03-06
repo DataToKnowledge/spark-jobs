@@ -66,7 +66,9 @@ object TagArticles extends StreamUtils {
     val consProps = ConsumerProperties(
       brokers = kafkaBrokers,
       topics = readTopic,
-      groupName = "tag_articles"
+      groupName = "tag_articles",
+      keyDes = "",
+      valueDes = ""
     )
 
     val feedItemStream = ssc.actorStream[(String, Article)](
