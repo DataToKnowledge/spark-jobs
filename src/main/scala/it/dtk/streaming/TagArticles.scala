@@ -71,8 +71,8 @@ object TagArticles extends StreamUtils {
     val consProps = Map(
       "bootstrap.servers" -> kafkaBrokers,
       "group.id" -> "feed_reader",
-      "value.deserializer" -> "org.apache.kafka.common.serialization.ByteArraySerializer",
-      "key.deserializer" -> "org.apache.kafka.common.serialization.ByteArraySerializer"
+      "value.deserializer" -> "org.apache.kafka.common.serialization.ByteArrayDeserializer",
+      "key.deserializer" -> "org.apache.kafka.common.serialization.ByteArrayDeserializer"
     )
 
     val inputStream = ssc.actorStream[(Array[Byte], Array[Byte])](
