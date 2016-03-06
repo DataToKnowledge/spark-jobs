@@ -70,7 +70,7 @@ object TagArticles extends StreamUtils {
 
     val kafkaParams = Map[String, String](
       "bootstrap.servers" -> kafkaBrokers,
-      "auto.offset.reset" -> "smallest")
+      "auto.offset.reset" -> offset)
 
     val inputStream = KafkaUtils.createDirectStream[Array[Byte], Array[Byte], DefaultDecoder, DefaultDecoder](
       ssc, kafkaParams, readTopic.split(",").toSet
