@@ -101,7 +101,7 @@ trait StreamUtils {
         it.foreach { t =>
           println(s"sending to kafka tweet with id ${t.id}")
           tweetAvroType.io.write(t, buf)
-          val message = new ProducerRecord[Array[Byte], Array[Byte]](topic, t.id.getBytes(), write(t).getBytes())
+          val message = new ProducerRecord[Array[Byte], Array[Byte]](topic, t.id.getBytes(), buf.toByteArray)
           producer.send(message)
           buf.reset()
         }

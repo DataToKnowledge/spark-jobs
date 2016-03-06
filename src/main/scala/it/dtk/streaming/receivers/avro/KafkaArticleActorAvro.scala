@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream
 
 import akka.actor.{PoisonPill, Actor}
 import com.gensler.scalavro.types.AvroType
-import it.dtk.kafka.{ConsumerProperties, KafkaReader}
 import it.dtk.model.Article
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.TopicPartition
@@ -14,7 +13,6 @@ import org.apache.spark.streaming.receiver.ActorHelper
 import scala.collection.JavaConversions._
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
-import org.apache.kafka.clients.consumer.RangeAssignor
 
 /**
   * Created by fabiofumarola on 28/02/16.
