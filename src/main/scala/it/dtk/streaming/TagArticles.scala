@@ -67,7 +67,7 @@ object TagArticles extends StreamUtils {
 
     val consProps = Map(
       "bootstrap.servers" -> kafkaBrokers,
-      "group.id" -> UUID.randomUUID().toString
+      "group.id" -> "feed_reader"
     )
 
     val feedItemStream = ssc.actorStream[(String, Article)](

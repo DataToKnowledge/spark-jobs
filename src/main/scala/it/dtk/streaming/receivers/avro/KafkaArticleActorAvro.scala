@@ -2,7 +2,7 @@ package it.dtk.streaming.receivers.avro
 
 import java.io.ByteArrayInputStream
 
-import akka.actor.Actor
+import akka.actor.{PoisonPill, Actor}
 import com.gensler.scalavro.types.AvroType
 import it.dtk.kafka.{ConsumerProperties, KafkaReader}
 import it.dtk.model.Article
@@ -52,6 +52,7 @@ class KafkaArticleActorAvro(props: Map[String, String], topic: String, beginning
             store(url -> article)
 
           case Failure(ex) => ex.printStackTrace()
+            self ! PoisonPill
         }
       }
     //      self ! "start"
