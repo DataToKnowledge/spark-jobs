@@ -94,7 +94,7 @@ This is useful if you want to try the job
   --class it.dtk.streaming.TagArticles \
   --master spark://spark-master-0:7077 \
   --executor-memory 1G \
-  --total-executor-cores 3 \
+  --total-executor-cores 2 \
   ./spark-jobs-assembly-0.1.0.jar \
   prod
 
