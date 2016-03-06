@@ -6,7 +6,8 @@ lazy val commons = Seq(
   resolvers ++= Seq(
     "spray repo" at "http://repo.spray.io",
     Resolver.sonatypeRepo("public"),
-    Resolver.typesafeRepo("releases")
+    Resolver.typesafeRepo("releases"),
+    "Spark Packages Repo" at "http://dl.bintray.com/spark-packages/maven"
   )
 )
 
@@ -21,7 +22,8 @@ lazy val root = (project in file("."))
       //      "org.apache.spark" %% "spark-streaming-kafka" % "1.6.0" % "provided",
       "org.apache.spark" %% "spark-streaming-twitter" % "1.6.0",
       "org.elasticsearch" %% "elasticsearch-spark" % "2.2.0",
-      "com.gensler" %% "scalavro" % "0.6.2"
+      "com.gensler" %% "scalavro" % "0.6.2",
+      "dibbhatt" % "kafka-spark-consumer" % "1.0.6"
     ),
     libraryDependencies ~= {
       _.map(_.exclude("org.slf4j", "slf4j-log4j12"))
