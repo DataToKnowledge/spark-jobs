@@ -84,7 +84,7 @@ object TagArticles extends StreamUtils {
       "zookeeper.port" -> zkports,
       "zookeeper.broker.path" -> brokerPath,
       "kafka.topic" -> readTopic,
-      "zookeeper.consumer.connection" -> "zoo-2:2182",
+      "zookeeper.consumer.connection" -> "zoo-2:2181",
       "zookeeper.consumer.path" -> "/consumers",
       "kafka.consumer.id" -> "12345",
       //optional properties
