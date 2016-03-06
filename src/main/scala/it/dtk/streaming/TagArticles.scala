@@ -1,11 +1,16 @@
 package it.dtk.streaming
 
+import java.io.ByteArrayInputStream
+
 import akka.actor.Props
+import com.gensler.scalavro.types.AvroType
 import it.dtk.kafka.ConsumerProperties
 import it.dtk.model._
 import it.dtk.nlp.{FocusLocation, DBpediaSpotLight, DBpedia}
 import it.dtk.streaming.receivers.avro.KafkaArticleActorAvro
+import kafka.serializer.DefaultDecoder
 import org.apache.spark.SparkConf
+import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
 /**
@@ -71,9 +76,25 @@ object TagArticles extends StreamUtils {
       valueDes = ""
     )
 
-    val feedItemStream = ssc.actorStream[(String, Article)](
-      Props(new KafkaArticleActorAvro(consProps, true)), "read_articles"
+    val topicsSet = readTopic.split(",").toSet
+    val kafkaParams = Map[String, String]("metadata.broker.list" -> kafkaBrokers, " auto.offset.reset" -> "smallest")
+    val inputStream = KafkaUtils.createDirectStream[Array[Byte], Array[Byte], DefaultDecoder, DefaultDecoder](
+      ssc, kafkaParams, topicsSet
     )
+
+    val feedItemStream = inputStream.mapPartitions { it =>
+      val articleAvroType = AvroType[Article]
+      it.map { e =>
+        val url = new String(e._1)
+        val artile = articleAvroType.io.read(new ByteArrayInputStream(e._2)).toOption
+        url -> artile
+      }
+    }.filter(_._2.isDefined)
+      .map(e => e._1 -> e._2.get)
+
+    //    val feedItemStream = ssc.actorStream[(String, Article)](
+    //      Props(new KafkaArticleActorAvro(consProps, true)), "read_articles"
+    //    )
 
     feedItemStream.count().foreachRDD { rdd =>
       println(s"Got ${rdd.collect()(0)} articles to tag from kafka")
