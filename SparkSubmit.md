@@ -31,7 +31,7 @@ Moreover you can use local[2] as master to run all the workers locally
 # Run on a Spark standalone cluster in cluster deploy mode with supervise
 ./bin/spark-submit \
   --class it.dtk.streaming.ExtractQueryTerms \
-  --master spark://spark-master-0:7077  \
+  --master spark://spark-master-0:6066  \
   --deploy-mode cluster \
   --supervise \
   --executor-memory 1G \
